@@ -1,0 +1,18 @@
+# Unity
+[Ll]ibrary/
+[Tt]emp/
+[Oo]bj/
+[Bb]uild/
+[Bb]uilds/
+[Ll]ogs/
+UserSettings/
+MemoryCaptures/
+# Visual Studio
+.vs/
+*.user
+*.csproj
+*.sln
+*.suo
+
+# macOS
+.DS_Store

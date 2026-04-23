@@ -1,0 +1,465 @@
+using UnityEngine;
+using UnityEngine.UI;
+
+public class Level0TutorialHud : MonoBehaviour
+{
+    [Header("Behavior")]
+    [SerializeField] private bool hideExistingCanvases = true;
+    [SerializeField] private float raycastRange = 3.0f;
+
+    [Header("Scene Objects")]
+    [SerializeField] private string scrollName = "Scroll_MasterIntro";
+    [SerializeField] private string chestName = "Chest_RuneContainer";
+    [SerializeField] private string doorName = "Door_level0_exit";
+    [SerializeField] private string firstSlotName = "StampSlot_1";
+    [SerializeField] private string secondSlotName = "StampSlot_2";
+    [SerializeField] private string fireBarrierName = "traps_fire";
+
+    private const string CanvasName = "TheAlchemistsLegacy_Level0HUD";
+
+    private Canvas hudCanvas;
+    private Text objectiveText;
+    private Text promptText;
+    private Text heldItemText;
+    private GameObject promptPanel;
+    private GameObject scrollPanel;
+    private GameObject introPanel;
+
+    private Camera playerCamera;
+    private ItemPickup itemPickup;
+    private ItemSlotController firstSlot;
+    private ItemSlotController secondSlot;
+    private GameObject scrollObject;
+    private GameObject chestObject;
+    private GameObject doorObject;
+    private GameObject fireBarrierObject;
+    private bool hasReadScroll;
+    private bool isIntroOpen;
+    private bool isScrollOpen;
+    private Font defaultFont;
+
+    private void Start()
+    {
+        CacheReferences();
+
+        if (hideExistingCanvases)
+        {
+            HideExistingCanvases();
+        }
+
+        BuildHud();
+    }
+
+    private void Update()
+    {
+        CacheReferences();
+
+        if (isIntroOpen)
+        {
+            if (Input.GetMouseButtonDown(1) || Input.GetKeyDown(KeyCode.Escape) || Input.GetKeyDown(KeyCode.E))
+            {
+                SetIntroOpen(false);
+            }
+
+            return;
+        }
+
+        if (isScrollOpen)
+        {
+            if (Input.GetMouseButtonDown(1) || Input.GetKeyDown(KeyCode.Escape) || Input.GetKeyDown(KeyCode.E))
+            {
+                SetScrollOpen(false);
+            }
+
+            return;
+        }
+
+        if (Input.GetMouseButtonDown(1) && IsLookingAt(scrollObject))
+        {
+            hasReadScroll = true;
+            SetScrollOpen(true);
+            return;
+        }
+
+        UpdateObjective();
+        UpdateHeldItem();
+        UpdatePrompt();
+    }
+
+    private void CacheReferences()
+    {
+        if (playerCamera == null)
+        {
+            playerCamera = Camera.main;
+        }
+
+        if (itemPickup == null)
+        {
+            itemPickup = ItemPickup.instance != null ? ItemPickup.instance : FindObjectOfType<ItemPickup>();
+        }
+
+        if (scrollObject == null)
+        {
+            scrollObject = GameObject.Find(scrollName);
+        }
+
+        if (chestObject == null)
+        {
+            chestObject = GameObject.Find(chestName);
+        }
+
+        if (doorObject == null)
+        {
+            doorObject = GameObject.Find(doorName);
+        }
+
+        if (fireBarrierObject == null)
+        {
+            fireBarrierObject = GameObject.Find(fireBarrierName);
+        }
+
+        if (firstSlot == null)
+        {
+            firstSlot = FindSlot(firstSlotName);
+        }
+
+        if (secondSlot == null)
+        {
+            secondSlot = FindSlot(secondSlotName);
+        }
+    }
+
+    private ItemSlotController FindSlot(string objectName)
+    {
+        GameObject slotObject = GameObject.Find(objectName);
+        return slotObject != null ? slotObject.GetComponent<ItemSlotController>() : null;
+    }
+
+    private void HideExistingCanvases()
+    {
+        Canvas[] canvases = FindObjectsOfType<Canvas>();
+        foreach (Canvas canvas in canvases)
+        {
+            if (canvas != null && canvas.name != CanvasName)
+            {
+                canvas.gameObject.SetActive(false);
+            }
+        }
+    }
+
+    private void BuildHud()
+    {
+        defaultFont = Resources.GetBuiltinResource<Font>("Arial.ttf");
+
+        GameObject canvasObject = new GameObject(CanvasName);
+        hudCanvas = canvasObject.AddComponent<Canvas>();
+        hudCanvas.renderMode = RenderMode.ScreenSpaceOverlay;
+        hudCanvas.sortingOrder = 50;
+
+        CanvasScaler scaler = canvasObject.AddComponent<CanvasScaler>();
+        scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+        scaler.referenceResolution = new Vector2(1920.0f, 1080.0f);
+        scaler.matchWidthOrHeight = 0.5f;
+
+        canvasObject.AddComponent<GraphicRaycaster>();
+
+        BuildObjectivePanel(canvasObject.transform);
+        BuildControlsPanel(canvasObject.transform);
+        BuildPromptPanel(canvasObject.transform);
+        BuildHeldItemPanel(canvasObject.transform);
+        BuildCrosshair(canvasObject.transform);
+        BuildScrollPanel(canvasObject.transform);
+        BuildIntroPanel(canvasObject.transform);
+
+        UpdateObjective();
+        UpdateHeldItem();
+        UpdatePrompt();
+        SetIntroOpen(true);
+    }
+
+    private void BuildObjectivePanel(Transform parent)
+    {
+        GameObject panel = CreatePanel(parent, "ObjectivePanel", new Color(0.05f, 0.045f, 0.04f, 0.78f));
+        RectTransform rect = panel.GetComponent<RectTransform>();
+        Anchor(rect, new Vector2(0.0f, 1.0f), new Vector2(0.0f, 1.0f), new Vector2(26.0f, -24.0f), new Vector2(650.0f, 108.0f), new Vector2(0.0f, 1.0f));
+
+        Text title = CreateText(panel.transform, "Title", "Apprentice Trial", 28, new Color(1.0f, 0.86f, 0.52f), TextAnchor.UpperLeft);
+        Anchor(title.rectTransform, new Vector2(0.0f, 1.0f), new Vector2(1.0f, 1.0f), new Vector2(18.0f, -14.0f), new Vector2(-36.0f, 36.0f), new Vector2(0.0f, 1.0f));
+
+        objectiveText = CreateText(panel.transform, "ObjectiveText", "", 24, Color.white, TextAnchor.UpperLeft);
+        Anchor(objectiveText.rectTransform, new Vector2(0.0f, 1.0f), new Vector2(1.0f, 1.0f), new Vector2(18.0f, -54.0f), new Vector2(-36.0f, 44.0f), new Vector2(0.0f, 1.0f));
+    }
+
+    private void BuildControlsPanel(Transform parent)
+    {
+        GameObject panel = CreatePanel(parent, "ControlsPanel", new Color(0.05f, 0.045f, 0.04f, 0.70f));
+        RectTransform rect = panel.GetComponent<RectTransform>();
+        Anchor(rect, new Vector2(0.0f, 0.0f), new Vector2(0.0f, 0.0f), new Vector2(26.0f, 26.0f), new Vector2(780.0f, 74.0f), new Vector2(0.0f, 0.0f));
+
+        Text controls = CreateText(panel.transform, "ControlsText", "WASD: Move    E: Pick up / drop    Right Click: Read, open, or place", 22, Color.white, TextAnchor.MiddleLeft);
+        Anchor(controls.rectTransform, new Vector2(0.0f, 0.0f), new Vector2(1.0f, 1.0f), new Vector2(18.0f, 0.0f), new Vector2(-36.0f, 0.0f), new Vector2(0.0f, 0.5f));
+    }
+
+    private void BuildPromptPanel(Transform parent)
+    {
+        promptPanel = CreatePanel(parent, "PromptPanel", new Color(0.05f, 0.045f, 0.04f, 0.82f));
+        RectTransform rect = promptPanel.GetComponent<RectTransform>();
+        Anchor(rect, new Vector2(0.5f, 0.0f), new Vector2(0.5f, 0.0f), new Vector2(0.0f, 116.0f), new Vector2(780.0f, 68.0f), new Vector2(0.5f, 0.0f));
+
+        promptText = CreateText(promptPanel.transform, "PromptText", "", 26, Color.white, TextAnchor.MiddleCenter);
+        Anchor(promptText.rectTransform, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero, new Vector2(0.5f, 0.5f));
+    }
+
+    private void BuildHeldItemPanel(Transform parent)
+    {
+        GameObject panel = CreatePanel(parent, "HeldItemPanel", new Color(0.05f, 0.045f, 0.04f, 0.70f));
+        RectTransform rect = panel.GetComponent<RectTransform>();
+        Anchor(rect, new Vector2(1.0f, 1.0f), new Vector2(1.0f, 1.0f), new Vector2(-90.0f, -24.0f), new Vector2(470.0f, 62.0f), new Vector2(1.0f, 1.0f));
+
+        heldItemText = CreateText(panel.transform, "HeldItemText", "", 22, Color.white, TextAnchor.MiddleCenter);
+        Anchor(heldItemText.rectTransform, Vector2.zero, Vector2.one, new Vector2(0.0f, 0.0f), new Vector2(-36.0f, 0.0f), new Vector2(0.5f, 0.5f));
+    }
+
+    private void BuildCrosshair(Transform parent)
+    {
+        GameObject root = new GameObject("Crosshair");
+        root.transform.SetParent(parent, false);
+        RectTransform rect = root.AddComponent<RectTransform>();
+        Anchor(rect, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(26.0f, 26.0f), new Vector2(0.5f, 0.5f));
+
+        CreateLine(root.transform, "Horizontal", new Vector2(18.0f, 2.0f));
+        CreateLine(root.transform, "Vertical", new Vector2(2.0f, 18.0f));
+    }
+
+    private void BuildScrollPanel(Transform parent)
+    {
+        scrollPanel = CreatePanel(parent, "ScrollPanel", new Color(0.87f, 0.78f, 0.58f, 0.96f));
+        RectTransform rect = scrollPanel.GetComponent<RectTransform>();
+        Anchor(rect, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(900.0f, 560.0f), new Vector2(0.5f, 0.5f));
+
+        Text title = CreateText(scrollPanel.transform, "ScrollTitle", "Master's Note", 36, new Color(0.14f, 0.08f, 0.03f), TextAnchor.UpperCenter);
+        Anchor(title.rectTransform, new Vector2(0.0f, 1.0f), new Vector2(1.0f, 1.0f), new Vector2(40.0f, -34.0f), new Vector2(-80.0f, 56.0f), new Vector2(0.5f, 1.0f));
+
+        Text body = CreateText(scrollPanel.transform, "ScrollBody",
+            "Apprentice,\n\nTwo seals wake the old door.\nOne rests in the open. One waits inside the chest.\n\nLet the first seal answer the left hand of the room.\nLet the second complete the right.\n\nCross only when the fire fades.",
+            28,
+            new Color(0.12f, 0.07f, 0.03f),
+            TextAnchor.UpperLeft);
+        body.lineSpacing = 1.08f;
+        Anchor(body.rectTransform, new Vector2(0.0f, 1.0f), new Vector2(1.0f, 1.0f), new Vector2(70.0f, -116.0f), new Vector2(-140.0f, 310.0f), new Vector2(0.0f, 1.0f));
+
+        Text close = CreateText(scrollPanel.transform, "ScrollClose", "Right Click / E  Close", 22, new Color(0.16f, 0.10f, 0.05f), TextAnchor.LowerCenter);
+        Anchor(close.rectTransform, new Vector2(0.0f, 0.0f), new Vector2(1.0f, 0.0f), new Vector2(0.0f, 28.0f), new Vector2(-80.0f, 36.0f), new Vector2(0.5f, 0.0f));
+
+        scrollPanel.SetActive(false);
+    }
+
+    private void BuildIntroPanel(Transform parent)
+    {
+        introPanel = CreatePanel(parent, "IntroPanel", new Color(0.87f, 0.78f, 0.58f, 0.96f));
+        RectTransform rect = introPanel.GetComponent<RectTransform>();
+        Anchor(rect, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(900.0f, 560.0f), new Vector2(0.5f, 0.5f));
+
+        Text title = CreateText(introPanel.transform, "IntroTitle", "A Letter from the Master", 36, new Color(0.14f, 0.08f, 0.03f), TextAnchor.UpperCenter);
+        Anchor(title.rectTransform, new Vector2(0.0f, 1.0f), new Vector2(1.0f, 1.0f), new Vector2(40.0f, -34.0f), new Vector2(-80.0f, 56.0f), new Vector2(0.5f, 1.0f));
+
+        Text body = CreateText(introPanel.transform, "IntroBody",
+            "Apprentice,\n\nYou wake inside the old workshop. The master has left a final trial: learn the room, recover two stamps, and prove you can follow the marks of the craft.\n\nRead the note on the table first. It explains how to open the way out.",
+            27,
+            new Color(0.12f, 0.07f, 0.03f),
+            TextAnchor.UpperLeft);
+        body.lineSpacing = 1.08f;
+        Anchor(body.rectTransform, new Vector2(0.0f, 1.0f), new Vector2(1.0f, 1.0f), new Vector2(70.0f, -116.0f), new Vector2(-140.0f, 310.0f), new Vector2(0.0f, 1.0f));
+
+        Text close = CreateText(introPanel.transform, "IntroClose", "Right Click / E  Begin", 22, new Color(0.16f, 0.10f, 0.05f), TextAnchor.LowerCenter);
+        Anchor(close.rectTransform, new Vector2(0.0f, 0.0f), new Vector2(1.0f, 0.0f), new Vector2(0.0f, 28.0f), new Vector2(-80.0f, 36.0f), new Vector2(0.5f, 0.0f));
+
+        introPanel.SetActive(false);
+    }
+
+    private void UpdateObjective()
+    {
+        bool firstDone = firstSlot != null && firstSlot.IsFilled;
+        bool secondDone = secondSlot != null && secondSlot.IsFilled;
+
+        objectiveText.text = firstDone && secondDone
+            ? "Goal: exit the room."
+            : "Goal: place both stamps, then exit.";
+    }
+
+    private void UpdateHeldItem()
+    {
+        if (heldItemText == null)
+        {
+            return;
+        }
+
+        if (itemPickup != null && itemPickup.isHoldingItem && !string.IsNullOrWhiteSpace(itemPickup.currentItemName))
+        {
+            heldItemText.text = "Holding: " + itemPickup.currentItemName;
+        }
+        else
+        {
+            heldItemText.text = "Hands empty";
+        }
+    }
+
+    private void UpdatePrompt()
+    {
+        string message = GetLookPrompt();
+        bool hasPrompt = !string.IsNullOrWhiteSpace(message);
+
+        promptPanel.SetActive(hasPrompt);
+        promptText.text = message;
+    }
+
+    private string GetLookPrompt()
+    {
+        if (!TryLook(out RaycastHit hit))
+        {
+            return "";
+        }
+
+        Transform target = hit.collider.transform;
+
+        if (Matches(target, scrollObject))
+        {
+            return "Right Click: Read the note";
+        }
+
+        if (Matches(target, chestObject))
+        {
+            return "Right Click: Open the chest";
+        }
+
+        if (Matches(target, fireBarrierObject) || IsFireOrTrapTarget(target))
+        {
+            bool ready = firstSlot != null && firstSlot.IsFilled && secondSlot != null && secondSlot.IsFilled;
+            return ready ? "The fire has faded. Go to the door." : "Find both stamps and place them in the bowls before leaving.";
+        }
+
+        ItemSlotController slot = target.GetComponentInParent<ItemSlotController>();
+        if (slot != null)
+        {
+            if (slot.IsFilled)
+            {
+                return "This seal is complete";
+            }
+
+            if (itemPickup != null && itemPickup.isHoldingItem)
+            {
+                return "Right Click: Place " + itemPickup.currentItemName;
+            }
+
+            return "Find the matching seal first";
+        }
+
+        if (hit.collider.CompareTag("Pickup"))
+        {
+            return "E: Pick up " + hit.collider.name;
+        }
+
+        if (Matches(target, doorObject))
+        {
+            bool ready = firstSlot != null && firstSlot.IsFilled && secondSlot != null && secondSlot.IsFilled;
+            return ready ? "Walk forward to finish the trial" : "Two seals are required";
+        }
+
+        return "";
+    }
+
+    private bool IsLookingAt(GameObject targetObject)
+    {
+        return targetObject != null && TryLook(out RaycastHit hit) && Matches(hit.collider.transform, targetObject);
+    }
+
+    private bool TryLook(out RaycastHit hit)
+    {
+        hit = default;
+        if (playerCamera == null)
+        {
+            return false;
+        }
+
+        Ray ray = playerCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0.0f));
+        return Physics.Raycast(ray, out hit, raycastRange);
+    }
+
+    private bool Matches(Transform transformToCheck, GameObject targetObject)
+    {
+        return targetObject != null
+            && (transformToCheck == targetObject.transform || transformToCheck.IsChildOf(targetObject.transform));
+    }
+
+    private bool IsFireOrTrapTarget(Transform target)
+    {
+        while (target != null)
+        {
+            string lowerName = target.name.ToLowerInvariant();
+            if (lowerName.Contains("fire") || lowerName.Contains("trap"))
+            {
+                return true;
+            }
+
+            target = target.parent;
+        }
+
+        return false;
+    }
+
+    private void SetScrollOpen(bool isOpen)
+    {
+        isScrollOpen = isOpen;
+        scrollPanel.SetActive(isOpen);
+        promptPanel.SetActive(!isOpen && !isIntroOpen);
+    }
+
+    private void SetIntroOpen(bool isOpen)
+    {
+        isIntroOpen = isOpen;
+        introPanel.SetActive(isOpen);
+        promptPanel.SetActive(!isOpen && !isScrollOpen);
+    }
+
+    private GameObject CreatePanel(Transform parent, string objectName, Color color)
+    {
+        GameObject panel = new GameObject(objectName);
+        panel.transform.SetParent(parent, false);
+        Image image = panel.AddComponent<Image>();
+        image.color = color;
+        return panel;
+    }
+
+    private Text CreateText(Transform parent, string objectName, string content, int fontSize, Color color, TextAnchor alignment)
+    {
+        GameObject textObject = new GameObject(objectName);
+        textObject.transform.SetParent(parent, false);
+
+        Text text = textObject.AddComponent<Text>();
+        text.font = defaultFont;
+        text.text = content;
+        text.fontSize = fontSize;
+        text.color = color;
+        text.alignment = alignment;
+        text.horizontalOverflow = HorizontalWrapMode.Wrap;
+        text.verticalOverflow = VerticalWrapMode.Truncate;
+
+        return text;
+    }
+
+    private void CreateLine(Transform parent, string objectName, Vector2 size)
+    {
+        GameObject line = CreatePanel(parent, objectName, new Color(1.0f, 1.0f, 1.0f, 0.8f));
+        RectTransform rect = line.GetComponent<RectTransform>();
+        Anchor(rect, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, size, new Vector2(0.5f, 0.5f));
+    }
+
+    private void Anchor(RectTransform rect, Vector2 min, Vector2 max, Vector2 position, Vector2 size, Vector2 pivot)
+    {
+        rect.anchorMin = min;
+        rect.anchorMax = max;
+        rect.anchoredPosition = position;
+        rect.sizeDelta = size;
+        rect.pivot = pivot;
+    }
+}
