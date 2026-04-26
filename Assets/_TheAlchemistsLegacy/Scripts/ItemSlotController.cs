@@ -60,7 +60,11 @@ public class ItemSlotController : MonoBehaviour
 
         string lowerName = gameObject.name.ToLowerInvariant();
 
-        if (lowerName.Contains("slot_1") || lowerName.Contains("slot1"))
+        if (lowerName.Contains("doorsealslot") || lowerName.Contains("door_seal_slot"))
+        {
+            acceptedItemName = "FinalSeal";
+        }
+        else if (lowerName.Contains("slot_1") || lowerName.Contains("slot1"))
         {
             acceptedItemName = "Stamp1";
         }
@@ -145,21 +149,29 @@ public class ItemSlotController : MonoBehaviour
 
     private void PlaceItem(GameObject item)
     {
-        if (placedVisual != null)
+        Transform targetPoint = placedPoint != null ? placedPoint : transform;
+
+        bool useHeldItemAsPlacedVisual = placedVisual != null && placedVisual == item;
+
+        if (placedVisual != null && !useHeldItemAsPlacedVisual)
         {
             placedVisual.SetActive(true);
         }
 
-        if (destroyHeldItemOnPlace)
+        if (destroyHeldItemOnPlace && !useHeldItemAsPlacedVisual)
         {
             Destroy(item);
             return;
         }
 
-        Transform targetPoint = placedPoint != null ? placedPoint : transform;
         item.transform.SetParent(targetPoint);
         item.transform.localPosition = Vector3.zero;
         item.transform.localRotation = Quaternion.identity;
+
+        if (useHeldItemAsPlacedVisual)
+        {
+            placedVisual.SetActive(true);
+        }
 
         Collider itemCollider = item.GetComponent<Collider>();
         if (itemCollider != null)

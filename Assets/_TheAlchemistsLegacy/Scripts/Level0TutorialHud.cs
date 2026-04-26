@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class Level0TutorialHud : MonoBehaviour
@@ -29,6 +30,9 @@ public class Level0TutorialHud : MonoBehaviour
     private ItemPickup itemPickup;
     private ItemSlotController firstSlot;
     private ItemSlotController secondSlot;
+    private ItemSlotController level1DoorSealSlot;
+    private Level1PedestalController level1Pedestal;
+    private Level1FurnaceController level1Furnace;
     private GameObject scrollObject;
     private GameObject chestObject;
     private GameObject doorObject;
@@ -37,9 +41,11 @@ public class Level0TutorialHud : MonoBehaviour
     private bool isIntroOpen;
     private bool isScrollOpen;
     private Font defaultFont;
+    private bool isLevel1Scene;
 
     private void Start()
     {
+        isLevel1Scene = SceneManager.GetActiveScene().name == "Level1";
         CacheReferences();
 
         if (hideExistingCanvases)
@@ -74,7 +80,7 @@ public class Level0TutorialHud : MonoBehaviour
             return;
         }
 
-        if (Input.GetMouseButtonDown(1) && IsLookingAt(scrollObject))
+        if (!isLevel1Scene && Input.GetMouseButtonDown(1) && IsLookingAt(scrollObject))
         {
             hasReadScroll = true;
             SetScrollOpen(true);
@@ -96,6 +102,49 @@ public class Level0TutorialHud : MonoBehaviour
         if (itemPickup == null)
         {
             itemPickup = ItemPickup.instance != null ? ItemPickup.instance : FindObjectOfType<ItemPickup>();
+        }
+
+        if (isLevel1Scene)
+        {
+            if (scrollObject == null)
+            {
+                scrollObject = GameObject.Find("Scroll2");
+            }
+
+            if (chestObject == null)
+            {
+                KeyChestController level1Chest = FindObjectOfType<KeyChestController>();
+                chestObject = level1Chest != null ? level1Chest.gameObject : null;
+            }
+
+            if (doorObject == null)
+            {
+                doorObject = GameObject.Find("Door_level1_exit");
+            }
+
+            if (fireBarrierObject == null)
+            {
+                fireBarrierObject = GameObject.Find(fireBarrierName);
+            }
+
+            if (level1DoorSealSlot == null)
+            {
+                GameObject slotObject = GameObject.Find("DoorSealSlot_Level1");
+                level1DoorSealSlot = slotObject != null ? slotObject.GetComponent<ItemSlotController>() : null;
+            }
+
+            if (level1Pedestal == null)
+            {
+                GameObject pedestalObject = GameObject.Find(firstSlotName);
+                level1Pedestal = pedestalObject != null ? pedestalObject.GetComponent<Level1PedestalController>() : null;
+            }
+
+            if (level1Furnace == null)
+            {
+                level1Furnace = FindObjectOfType<Level1FurnaceController>();
+            }
+
+            return;
         }
 
         if (scrollObject == null)
@@ -183,7 +232,8 @@ public class Level0TutorialHud : MonoBehaviour
         RectTransform rect = panel.GetComponent<RectTransform>();
         Anchor(rect, new Vector2(0.0f, 1.0f), new Vector2(0.0f, 1.0f), new Vector2(26.0f, -24.0f), new Vector2(650.0f, 108.0f), new Vector2(0.0f, 1.0f));
 
-        Text title = CreateText(panel.transform, "Title", "Apprentice Trial", 28, new Color(1.0f, 0.86f, 0.52f), TextAnchor.UpperLeft);
+        string titleTextValue = isLevel1Scene ? "Workshop Trial" : "Apprentice Trial";
+        Text title = CreateText(panel.transform, "Title", titleTextValue, 28, new Color(1.0f, 0.86f, 0.52f), TextAnchor.UpperLeft);
         Anchor(title.rectTransform, new Vector2(0.0f, 1.0f), new Vector2(1.0f, 1.0f), new Vector2(18.0f, -14.0f), new Vector2(-36.0f, 36.0f), new Vector2(0.0f, 1.0f));
 
         objectiveText = CreateText(panel.transform, "ObjectiveText", "", 24, Color.white, TextAnchor.UpperLeft);
@@ -260,14 +310,15 @@ public class Level0TutorialHud : MonoBehaviour
         RectTransform rect = introPanel.GetComponent<RectTransform>();
         Anchor(rect, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(900.0f, 560.0f), new Vector2(0.5f, 0.5f));
 
-        Text title = CreateText(introPanel.transform, "IntroTitle", "A Letter from the Master", 36, new Color(0.14f, 0.08f, 0.03f), TextAnchor.UpperCenter);
+        string introTitle = isLevel1Scene ? "A Letter from the Master" : "A Letter from the Master";
+        string introBody = isLevel1Scene
+            ? "Apprentice,\n\nThree quiet seals lie where habit seldom lingers. One waits beneath a lid, while two keep to the room's far edges.\n\nOffer them to the basin at the workshop's heart, and the sleeping forge will remember its breath."
+            : "Apprentice,\n\nYou wake inside the old workshop. The master has left a final trial: learn the room, recover two stamps, and prove you can follow the marks of the craft.\n\nRead the note on the table first. It explains how to open the way out.";
+
+        Text title = CreateText(introPanel.transform, "IntroTitle", introTitle, 36, new Color(0.14f, 0.08f, 0.03f), TextAnchor.UpperCenter);
         Anchor(title.rectTransform, new Vector2(0.0f, 1.0f), new Vector2(1.0f, 1.0f), new Vector2(40.0f, -34.0f), new Vector2(-80.0f, 56.0f), new Vector2(0.5f, 1.0f));
 
-        Text body = CreateText(introPanel.transform, "IntroBody",
-            "Apprentice,\n\nYou wake inside the old workshop. The master has left a final trial: learn the room, recover two stamps, and prove you can follow the marks of the craft.\n\nRead the note on the table first. It explains how to open the way out.",
-            27,
-            new Color(0.12f, 0.07f, 0.03f),
-            TextAnchor.UpperLeft);
+        Text body = CreateText(introPanel.transform, "IntroBody", introBody, 27, new Color(0.12f, 0.07f, 0.03f), TextAnchor.UpperLeft);
         body.lineSpacing = 1.08f;
         Anchor(body.rectTransform, new Vector2(0.0f, 1.0f), new Vector2(1.0f, 1.0f), new Vector2(70.0f, -116.0f), new Vector2(-140.0f, 310.0f), new Vector2(0.0f, 1.0f));
 
@@ -279,6 +330,15 @@ public class Level0TutorialHud : MonoBehaviour
 
     private void UpdateObjective()
     {
+        if (isLevel1Scene)
+        {
+            bool pathOpen = level1DoorSealSlot != null && level1DoorSealSlot.IsFilled;
+            objectiveText.text = pathOpen
+                ? "Goal: the way is clear. Leave the workshop."
+                : "Goal: wake the forge and find the quiet way out.";
+            return;
+        }
+
         bool firstDone = firstSlot != null && firstSlot.IsFilled;
         bool secondDone = secondSlot != null && secondSlot.IsFilled;
 
@@ -294,9 +354,9 @@ public class Level0TutorialHud : MonoBehaviour
             return;
         }
 
-        if (itemPickup != null && itemPickup.isHoldingItem && !string.IsNullOrWhiteSpace(itemPickup.currentItemName))
+        if (itemPickup != null && itemPickup.isHoldingItem && itemPickup.currentItem != null)
         {
-            heldItemText.text = "Holding: " + itemPickup.currentItemName;
+            heldItemText.text = "Holding: " + GetFriendlyItemName(itemPickup.currentItem);
         }
         else
         {
@@ -320,6 +380,11 @@ public class Level0TutorialHud : MonoBehaviour
             return "";
         }
 
+        return isLevel1Scene ? GetLevel1LookPrompt(hit) : GetLevel0LookPrompt(hit);
+    }
+
+    private string GetLevel0LookPrompt(RaycastHit hit)
+    {
         Transform target = hit.collider.transform;
 
         if (Matches(target, scrollObject))
@@ -346,9 +411,9 @@ public class Level0TutorialHud : MonoBehaviour
                 return "This seal is complete";
             }
 
-            if (itemPickup != null && itemPickup.isHoldingItem)
+            if (itemPickup != null && itemPickup.isHoldingItem && itemPickup.currentItem != null)
             {
-                return "Right Click: Place " + itemPickup.currentItemName;
+                return "Right Click: Place " + GetFriendlyItemName(itemPickup.currentItem);
             }
 
             return "Find the matching seal first";
@@ -356,7 +421,7 @@ public class Level0TutorialHud : MonoBehaviour
 
         if (hit.collider.CompareTag("Pickup"))
         {
-            return "E: Pick up " + hit.collider.name;
+            return "E: Pick up " + GetFriendlyItemName(hit.collider.gameObject);
         }
 
         if (Matches(target, doorObject))
@@ -366,6 +431,136 @@ public class Level0TutorialHud : MonoBehaviour
         }
 
         return "";
+    }
+
+    private string GetLevel1LookPrompt(RaycastHit hit)
+    {
+        Transform target = hit.collider.transform;
+
+        Level1ScrollReader reader = target.GetComponentInParent<Level1ScrollReader>();
+        if (reader != null)
+        {
+            return reader.IsReadable ? "Right Click: Read the note" : "";
+        }
+
+        if (target.GetComponentInParent<KeyChestController>() != null)
+        {
+            return "Right Click: Lift the lid";
+        }
+
+        if (target.GetComponentInParent<Level1PedestalController>() != null)
+        {
+            if (itemPickup != null && itemPickup.isHoldingItem)
+            {
+                return "Right Click: Offer what you carry";
+            }
+
+            return "Three quiet seals may wake the forge.";
+        }
+
+        if (target.GetComponentInParent<Level1FurnaceController>() != null)
+        {
+            if (itemPickup != null && itemPickup.isHoldingItem)
+            {
+                return "Right Click: Feed the forge";
+            }
+
+            return "The forge waits for timber and iron.";
+        }
+
+        ItemSlotController slot = target.GetComponentInParent<ItemSlotController>();
+        if (slot != null)
+        {
+            if (slot.IsFilled)
+            {
+                return "The mark now rests in place.";
+            }
+
+            if (itemPickup != null && itemPickup.isHoldingItem)
+            {
+                return "Right Click: Set the forged mark";
+            }
+
+            return "A finished mark belongs here.";
+        }
+
+        if (Matches(target, fireBarrierObject) || IsFireOrTrapTarget(target))
+        {
+            bool pathOpen = level1DoorSealSlot != null && level1DoorSealSlot.IsFilled;
+            return pathOpen ? "The flames have bowed. The way is yours." : "The flames still refuse the way.";
+        }
+
+        if (hit.collider.CompareTag("Pickup"))
+        {
+            return GetPickupPrompt(hit.collider.gameObject);
+        }
+
+        if (Matches(target, doorObject) || target.name.ToLowerInvariant().Contains("door"))
+        {
+            bool pathOpen = level1DoorSealSlot != null && level1DoorSealSlot.IsFilled;
+            return pathOpen ? "Walk on to finish the trial" : "The way is not yet quiet.";
+        }
+
+        return "";
+    }
+
+    private string GetPickupPrompt(GameObject item)
+    {
+        string lowerName = item.name.ToLowerInvariant();
+
+        if (lowerName.Contains("finalseal"))
+        {
+            return "E: Take the forged seal";
+        }
+
+        if (lowerName.Contains("stamp"))
+        {
+            return "E: Gather the seal";
+        }
+
+        if (lowerName.Contains("wood") || lowerName.Contains("firewood") || lowerName.Contains("timber"))
+        {
+            return "E: Gather the timber";
+        }
+
+        if (lowerName.Contains("metal") || lowerName.Contains("iron") || lowerName.Contains("sawblade"))
+        {
+            return "E: Gather the iron";
+        }
+
+        return "E: Take it";
+    }
+
+    private string GetFriendlyItemName(GameObject item)
+    {
+        if (item == null)
+        {
+            return "item";
+        }
+
+        string lowerName = item.name.ToLowerInvariant();
+
+        if (lowerName.Contains("finalseal"))
+        {
+            return "Forged Seal";
+        }
+
+        if (lowerName.Contains("stamp"))
+        {
+            return "Seal";
+        }
+
+        if (lowerName.Contains("wood") || lowerName.Contains("firewood") || lowerName.Contains("timber"))
+        {
+            return "Dry Timber";
+        }
+
+        if (lowerName.Contains("metal") || lowerName.Contains("iron") || lowerName.Contains("sawblade"))
+        {
+            return "Cold Iron";
+        }
+
+        return item.name.Replace("(Clone)", "").Trim();
     }
 
     private bool IsLookingAt(GameObject targetObject)
