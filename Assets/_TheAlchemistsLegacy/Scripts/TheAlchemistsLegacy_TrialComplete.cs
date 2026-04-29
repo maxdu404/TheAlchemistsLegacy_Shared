@@ -6,16 +6,16 @@ public class TheAlchemistsLegacy_TrialComplete : MonoBehaviour
 {
     [SerializeField] private string title = "Trial Complete";
     [SerializeField] private string subtitle = "Choose your next trial.";
-    [SerializeField] private string startMenuSceneName = "NewMenu";
-    [SerializeField] private string firstLevelSceneName = "TheAlchemistsLegacy_Level0";
+    [SerializeField] private string startMenuSceneName = "TrailComplete";
+    [SerializeField] private string firstLevelSceneName = "Level0";
     [SerializeField] private TextMeshProUGUI titleText;
     [SerializeField] private TextMeshProUGUI subtitleText;
 
     private void Start()
     {
+        ResetRuntimeState();
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
-        Time.timeScale = 1.0f;
 
         if (titleText != null)
         {
@@ -30,20 +30,35 @@ public class TheAlchemistsLegacy_TrialComplete : MonoBehaviour
 
     public void StartGame()
     {
-        SceneManager.LoadScene(firstLevelSceneName);
+        LoadScene(firstLevelSceneName);
     }
 
     public void LoadLevelByName(string sceneName)
     {
         if (!string.IsNullOrWhiteSpace(sceneName))
         {
-            SceneManager.LoadScene(sceneName);
+            LoadScene(sceneName);
         }
     }
 
     public void ReturnToStartMenu()
     {
-        SceneManager.LoadScene(startMenuSceneName);
+        LoadScene(startMenuSceneName);
+    }
+
+    private void LoadScene(string sceneName)
+    {
+        ResetRuntimeState();
+        SceneManager.LoadScene(sceneName);
+    }
+
+    private void ResetRuntimeState()
+    {
+        Time.timeScale = 1.0f;
+
+#if UNITY_EDITOR
+        UnityEditor.EditorApplication.isPaused = false;
+#endif
     }
 
     public void QuitGame()

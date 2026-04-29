@@ -1,41 +1,65 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
 public class StartGameMenu : MonoBehaviour
 {
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
+    private const string FirstLevelSceneName = "Level0";
 
-    // Update is called once per frame
-    void Update()
+    private void Start()
     {
-        
+        ResetRuntimeState();
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
     }
 
     public void StartGame()
     {
-        SceneManager.LoadScene("Level0");
+        LoadSceneSafely(FirstLevelSceneName);
     }
 
     public void LoadLevelByName(string sceneName)
     {
+        if (sceneName == "TeachLevel")
+        {
+            sceneName = FirstLevelSceneName;
+        }
+
+        LoadSceneSafely(sceneName);
+    }
+
+    public void QuitGame()
+    {
+        Application.Quit();
+
+#if UNITY_EDITOR
+        UnityEditor.EditorApplication.isPlaying = false;
+#endif
+    }
+
+    private void LoadSceneSafely(string sceneName)
+    {
+        if (string.IsNullOrWhiteSpace(sceneName))
+        {
+            Debug.LogWarning("No scene name was provided for the menu button.");
+            return;
+        }
+
+        if (!Application.CanStreamedLevelBeLoaded(sceneName))
+        {
+            Debug.LogWarning($"Scene '{sceneName}' is not available. Add it to File > Build Settings > Scenes In Build, or create the scene asset first.");
+            return;
+        }
+
+        ResetRuntimeState();
         SceneManager.LoadScene(sceneName);
     }
 
-    // 退出游戏方法
-    public void QuitGame()
+    private void ResetRuntimeState()
     {
-        //Application.Quit();
-        Application.Quit();
+        Time.timeScale = 1.0f;
 
-        // 在编辑器模式下，退出 Play 模式
 #if UNITY_EDITOR
-        UnityEditor.EditorApplication.isPlaying = false;
+        UnityEditor.EditorApplication.isPaused = false;
 #endif
     }
 }

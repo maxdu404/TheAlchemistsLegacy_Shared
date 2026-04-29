@@ -150,6 +150,11 @@ public class Level1ExitController : MonoBehaviour
         }
 
         isLoading = true;
+        Time.timeScale = 1.0f;
+
+#if UNITY_EDITOR
+        UnityEditor.EditorApplication.isPaused = false;
+#endif
         SceneManager.LoadScene(sceneToLoad);
     }
 }

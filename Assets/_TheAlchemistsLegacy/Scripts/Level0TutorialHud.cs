@@ -17,6 +17,7 @@ public class Level0TutorialHud : MonoBehaviour
     [SerializeField] private string fireBarrierName = "traps_fire";
 
     private const string CanvasName = "TheAlchemistsLegacy_Level0HUD";
+    private const string TrialCompleteSceneName = "TrailComplete";
 
     private Canvas hudCanvas;
     private Text objectiveText;
@@ -33,6 +34,8 @@ public class Level0TutorialHud : MonoBehaviour
     private ItemSlotController level1DoorSealSlot;
     private Level1PedestalController level1Pedestal;
     private Level1FurnaceController level1Furnace;
+    private Level2TorchSequenceController level2Sequence;
+    private GameObject level2GateObject;
     private GameObject scrollObject;
     private GameObject chestObject;
     private GameObject doorObject;
@@ -42,10 +45,15 @@ public class Level0TutorialHud : MonoBehaviour
     private bool isScrollOpen;
     private Font defaultFont;
     private bool isLevel1Scene;
+    private bool isLevel2Scene;
 
     private void Start()
     {
-        isLevel1Scene = SceneManager.GetActiveScene().name == "Level1";
+        ResumeRuntime();
+
+        string sceneName = SceneManager.GetActiveScene().name;
+        isLevel1Scene = sceneName == "Level1";
+        isLevel2Scene = sceneName == "Level2";
         CacheReferences();
 
         if (hideExistingCanvases)
@@ -58,6 +66,12 @@ public class Level0TutorialHud : MonoBehaviour
 
     private void Update()
     {
+        if (Input.GetKeyDown(KeyCode.Y))
+        {
+            ReturnToTrialComplete();
+            return;
+        }
+
         CacheReferences();
 
         if (isIntroOpen)
@@ -142,6 +156,36 @@ public class Level0TutorialHud : MonoBehaviour
             if (level1Furnace == null)
             {
                 level1Furnace = FindObjectOfType<Level1FurnaceController>();
+            }
+
+            return;
+        }
+
+        if (isLevel2Scene)
+        {
+            if (scrollObject == null)
+            {
+                scrollObject = GameObject.Find("StoneTablet_Level2_Scroll");
+            }
+
+            if (doorObject == null)
+            {
+                doorObject = GameObject.Find("Door_l2_Exit");
+            }
+
+            if (fireBarrierObject == null)
+            {
+                fireBarrierObject = GameObject.Find("Traps_l2_exit");
+            }
+
+            if (level2GateObject == null)
+            {
+                level2GateObject = GameObject.Find("Gate_Level2_Exit");
+            }
+
+            if (level2Sequence == null)
+            {
+                level2Sequence = FindObjectOfType<Level2TorchSequenceController>();
             }
 
             return;
@@ -232,7 +276,7 @@ public class Level0TutorialHud : MonoBehaviour
         RectTransform rect = panel.GetComponent<RectTransform>();
         Anchor(rect, new Vector2(0.0f, 1.0f), new Vector2(0.0f, 1.0f), new Vector2(26.0f, -24.0f), new Vector2(650.0f, 108.0f), new Vector2(0.0f, 1.0f));
 
-        string titleTextValue = isLevel1Scene ? "Workshop Trial" : "Apprentice Trial";
+        string titleTextValue = isLevel2Scene ? "Flame Trial" : isLevel1Scene ? "Workshop Trial" : "Apprentice Trial";
         Text title = CreateText(panel.transform, "Title", titleTextValue, 28, new Color(1.0f, 0.86f, 0.52f), TextAnchor.UpperLeft);
         Anchor(title.rectTransform, new Vector2(0.0f, 1.0f), new Vector2(1.0f, 1.0f), new Vector2(18.0f, -14.0f), new Vector2(-36.0f, 36.0f), new Vector2(0.0f, 1.0f));
 
@@ -244,9 +288,12 @@ public class Level0TutorialHud : MonoBehaviour
     {
         GameObject panel = CreatePanel(parent, "ControlsPanel", new Color(0.05f, 0.045f, 0.04f, 0.70f));
         RectTransform rect = panel.GetComponent<RectTransform>();
-        Anchor(rect, new Vector2(0.0f, 0.0f), new Vector2(0.0f, 0.0f), new Vector2(26.0f, 26.0f), new Vector2(780.0f, 74.0f), new Vector2(0.0f, 0.0f));
+        Anchor(rect, new Vector2(0.0f, 0.0f), new Vector2(0.0f, 0.0f), new Vector2(26.0f, 26.0f), new Vector2(1030.0f, 74.0f), new Vector2(0.0f, 0.0f));
 
-        Text controls = CreateText(panel.transform, "ControlsText", "WASD: Move    E: Pick up / drop    Right Click: Read, open, or place", 22, Color.white, TextAnchor.MiddleLeft);
+        string controlsText = isLevel2Scene
+            ? "WASD: Move    E: Pick up / drop    Right Click: Read or light    Y: Trial Complete"
+            : "WASD: Move    E: Pick up / drop    Right Click: Read, open, or place    Y: Trial Complete";
+        Text controls = CreateText(panel.transform, "ControlsText", controlsText, 20, Color.white, TextAnchor.MiddleLeft);
         Anchor(controls.rectTransform, new Vector2(0.0f, 0.0f), new Vector2(1.0f, 1.0f), new Vector2(18.0f, 0.0f), new Vector2(-36.0f, 0.0f), new Vector2(0.0f, 0.5f));
     }
 
@@ -287,11 +334,11 @@ public class Level0TutorialHud : MonoBehaviour
         RectTransform rect = scrollPanel.GetComponent<RectTransform>();
         Anchor(rect, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(900.0f, 560.0f), new Vector2(0.5f, 0.5f));
 
-        Text title = CreateText(scrollPanel.transform, "ScrollTitle", "Master's Note", 36, new Color(0.14f, 0.08f, 0.03f), TextAnchor.UpperCenter);
+        Text title = CreateText(scrollPanel.transform, "ScrollTitle", GetScrollTitle(), 36, new Color(0.14f, 0.08f, 0.03f), TextAnchor.UpperCenter);
         Anchor(title.rectTransform, new Vector2(0.0f, 1.0f), new Vector2(1.0f, 1.0f), new Vector2(40.0f, -34.0f), new Vector2(-80.0f, 56.0f), new Vector2(0.5f, 1.0f));
 
         Text body = CreateText(scrollPanel.transform, "ScrollBody",
-            "Apprentice,\n\nTwo seals wake the old door.\nOne rests in the open. One waits inside the chest.\n\nLet the first seal answer the left hand of the room.\nLet the second complete the right.\n\nCross only when the fire fades.",
+            GetScrollBody(),
             28,
             new Color(0.12f, 0.07f, 0.03f),
             TextAnchor.UpperLeft);
@@ -310,10 +357,8 @@ public class Level0TutorialHud : MonoBehaviour
         RectTransform rect = introPanel.GetComponent<RectTransform>();
         Anchor(rect, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(900.0f, 560.0f), new Vector2(0.5f, 0.5f));
 
-        string introTitle = isLevel1Scene ? "A Letter from the Master" : "A Letter from the Master";
-        string introBody = isLevel1Scene
-            ? "Apprentice,\n\nThree quiet seals lie where habit seldom lingers. One waits beneath a lid, while two keep to the room's far edges.\n\nOffer them to the basin at the workshop's heart, and the sleeping forge will remember its breath."
-            : "Apprentice,\n\nYou wake inside the old workshop. The master has left a final trial: learn the room, recover two stamps, and prove you can follow the marks of the craft.\n\nRead the note on the table first. It explains how to open the way out.";
+        string introTitle = "A Letter from the Master";
+        string introBody = GetIntroBody();
 
         Text title = CreateText(introPanel.transform, "IntroTitle", introTitle, 36, new Color(0.14f, 0.08f, 0.03f), TextAnchor.UpperCenter);
         Anchor(title.rectTransform, new Vector2(0.0f, 1.0f), new Vector2(1.0f, 1.0f), new Vector2(40.0f, -34.0f), new Vector2(-80.0f, 56.0f), new Vector2(0.5f, 1.0f));
@@ -328,8 +373,47 @@ public class Level0TutorialHud : MonoBehaviour
         introPanel.SetActive(false);
     }
 
+    private string GetScrollTitle()
+    {
+        return isLevel2Scene ? "Stone Tablet" : "Master's Note";
+    }
+
+    private string GetScrollBody()
+    {
+        if (isLevel2Scene)
+        {
+            return "Three waiting flames remember the way.\n\nFirst, wake the light nearest your first shelter.\nThen seek the flame watched by the quiet wall.\nLast, carry the memory to the black gate.";
+        }
+
+        return "Apprentice,\n\nTwo seals wake the old door.\nOne rests in the open. One waits inside the chest.\n\nLet the first seal answer the left hand of the room.\nLet the second complete the right.\n\nCross only when the fire fades.";
+    }
+
+    private string GetIntroBody()
+    {
+        if (isLevel2Scene)
+        {
+            return "Apprentice,\n\nMemory is a flame passed from hand to hand. A torch waits in your first shelter, but the walls will answer only in order.\n\nRead the stone, carry the flame, and let the last light open the black gate.";
+        }
+
+        if (isLevel1Scene)
+        {
+            return "Apprentice,\n\nThree quiet seals lie where habit seldom lingers. One waits beneath a lid, while two keep to the room's far edges.\n\nOffer them to the basin at the workshop's heart, and the sleeping forge will remember its breath.";
+        }
+
+        return "Apprentice,\n\nYou wake inside the old workshop. The master has left a final trial: learn the room, recover two stamps, and prove you can follow the marks of the craft.\n\nRead the note on the table first. It explains how to open the way out.";
+    }
+
     private void UpdateObjective()
     {
+        if (isLevel2Scene)
+        {
+            bool pathOpen = level2Sequence != null && level2Sequence.ExitUnlocked;
+            objectiveText.text = pathOpen
+                ? "Goal: the gate is open. Leave the castle."
+                : "Goal: carry the torch and wake the three flames.";
+            return;
+        }
+
         if (isLevel1Scene)
         {
             bool pathOpen = level1DoorSealSlot != null && level1DoorSealSlot.IsFilled;
@@ -378,6 +462,11 @@ public class Level0TutorialHud : MonoBehaviour
         if (!TryLook(out RaycastHit hit))
         {
             return "";
+        }
+
+        if (isLevel2Scene)
+        {
+            return GetLevel2LookPrompt(hit);
         }
 
         return isLevel1Scene ? GetLevel1LookPrompt(hit) : GetLevel0LookPrompt(hit);
@@ -504,9 +593,59 @@ public class Level0TutorialHud : MonoBehaviour
         return "";
     }
 
+    private string GetLevel2LookPrompt(RaycastHit hit)
+    {
+        Transform target = hit.collider.transform;
+
+        if (Matches(target, scrollObject))
+        {
+            return "Right Click: Read the stone";
+        }
+
+        Level2TorchPoint torch = target.GetComponentInParent<Level2TorchPoint>();
+        if (torch != null)
+        {
+            if (torch.IsLit)
+            {
+                return "This flame remembers.";
+            }
+
+            if (itemPickup != null && itemPickup.isHoldingItem && itemPickup.currentItem != null)
+            {
+                return "Right Click: Wake the flame";
+            }
+
+            return "Carry the torch before waking this flame.";
+        }
+
+        if (Matches(target, fireBarrierObject) || IsFireOrTrapTarget(target) || Matches(target, level2GateObject))
+        {
+            bool pathOpen = level2Sequence != null && level2Sequence.ExitUnlocked;
+            return pathOpen ? "The black gate is open." : "The last flame has not answered yet.";
+        }
+
+        if (hit.collider.CompareTag("Pickup"))
+        {
+            return GetPickupPrompt(hit.collider.gameObject);
+        }
+
+        if (Matches(target, doorObject) || target.name.ToLowerInvariant().Contains("door"))
+        {
+            bool pathOpen = level2Sequence != null && level2Sequence.ExitUnlocked;
+            return pathOpen ? "Walk forward to finish the trial" : "Wake the three flames first.";
+        }
+
+        return "";
+    }
+
     private string GetPickupPrompt(GameObject item)
     {
         string lowerName = item.name.ToLowerInvariant();
+
+        if (lowerName.Contains("torch_level2"))
+        {
+            return "E: Take the torch";
+        }
 
         if (lowerName.Contains("finalseal"))
         {
@@ -539,6 +678,11 @@ public class Level0TutorialHud : MonoBehaviour
         }
 
         string lowerName = item.name.ToLowerInvariant();
+
+        if (lowerName.Contains("torch_level2"))
+        {
+            return "Torch";
+        }
 
         if (lowerName.Contains("finalseal"))
         {
@@ -614,6 +758,21 @@ public class Level0TutorialHud : MonoBehaviour
         isIntroOpen = isOpen;
         introPanel.SetActive(isOpen);
         promptPanel.SetActive(!isOpen && !isScrollOpen);
+    }
+
+    private void ReturnToTrialComplete()
+    {
+        ResumeRuntime();
+        SceneManager.LoadScene(TrialCompleteSceneName);
+    }
+
+    private void ResumeRuntime()
+    {
+        Time.timeScale = 1.0f;
+
+#if UNITY_EDITOR
+        UnityEditor.EditorApplication.isPaused = false;
+#endif
     }
 
     private GameObject CreatePanel(Transform parent, string objectName, Color color)
