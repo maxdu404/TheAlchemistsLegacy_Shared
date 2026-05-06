@@ -1,145 +1,189 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class ItemPickup : MonoBehaviour
 {
-    [Header("pick up setting")]
-    public KeyCode pickupKey = KeyCode.E;  // 拾取物品的按键
-    public float pickupRange = 2.0f;       // 拾取距离
-    public Transform handPosition;         // 手的位置，物品将被放置在这里
-    public LayerMask pickupLayer;          // 可拾取物品的层
+    [Header("Pick Up Settings")]
+    public KeyCode pickupKey = KeyCode.E;
+    public float pickupRange = 2.0f;
+    public Transform handPosition;
+    public LayerMask pickupLayer;
 
-    [Header("current situation")]
-    public GameObject currentItem;         // 当前手中的物品
-    public bool isHoldingItem = false;     // 是否正在持有物品
+    [Header("Drop Settings")]
+    [SerializeField] private float dropDistance = 1.2f;
+    [SerializeField] private float dropHeightOffset = 0.2f;
+    [SerializeField] private float dropForwardImpulse = 0.5f;
 
-    private Camera playerCamera;
+    [Header("Current Item")]
+    public GameObject currentItem;
+    public bool isHoldingItem = false;
 
-    [Header("current item name")]
-    public string currentItemName = "";  // 当前拿着的物品名字
+    [Header("Current Item Name")]
+    public string currentItemName = "";
 
     public static ItemPickup instance;
 
-    void Awake()
+    private Camera playerCamera;
+
+    private void Awake()
     {
         instance = this;
     }
 
-    void Start()
+    private void Start()
     {
-        // 获取玩家摄像机
         playerCamera = Camera.main;
 
-        // 确保手的位置已经设置
         if (handPosition == null)
         {
-            Debug.LogError("未设置手的位置！请在Inspector中指定handPosition");
+            Debug.LogError("ItemPickup needs a handPosition assigned in the Inspector.");
         }
     }
 
-    void Update()
+    private void Update()
     {
-        // 当按下拾取键时
-        if (Input.GetKeyDown(pickupKey))
+        if (!Input.GetKeyDown(pickupKey))
         {
-            if (isHoldingItem)
-            {
-                // 如果已经拿着物品，则放下
-                DropItem();
-            }
-            else
-            {
-                // 尝试拾取物品
-                TryPickupItem();
-            }
+            return;
         }
-    }
 
-    void TryPickupItem()
-    {
-        RaycastHit hit;
-
-        // 从摄像机中心发射射线
-        Ray ray = playerCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0));
-
-        // 检测是否有可拾取的物品
-        if (Physics.Raycast(ray, out hit, pickupRange, pickupLayer))
+        if (isHoldingItem)
         {
-            // 找到了可拾取的物品
-            if (hit.collider.CompareTag("Pickup"))
-            {
-                PickupItem(hit.collider.gameObject);
-            }
-            else
-            {
-                Debug.Log("这个物体不能被捡起：" + hit.collider.name);
-            }
+            DropItem();
+        }
+        else
+        {
+            TryPickupItem();
         }
     }
 
-    void PickupItem(GameObject item)
+    private void TryPickupItem()
     {
-        // 保存对物品的引用
+        if (playerCamera == null)
+        {
+            playerCamera = Camera.main;
+        }
+
+        if (playerCamera == null)
+        {
+            return;
+        }
+
+        Ray ray = playerCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0.0f));
+        if (!Physics.Raycast(ray, out RaycastHit hit, pickupRange, pickupLayer))
+        {
+            return;
+        }
+
+        GameObject pickupObject = FindPickupRoot(hit.collider);
+        if (pickupObject == null)
+        {
+            Debug.Log("Object cannot be picked up: " + hit.collider.name);
+            return;
+        }
+
+        PickupItem(pickupObject);
+    }
+
+    private GameObject FindPickupRoot(Collider hitCollider)
+    {
+        Transform target = hitCollider.transform;
+
+        while (target != null)
+        {
+            if (target.CompareTag("Pickup"))
+            {
+                Rigidbody rootBody = target.GetComponentInParent<Rigidbody>();
+                if (rootBody != null && rootBody.CompareTag("Pickup"))
+                {
+                    return rootBody.gameObject;
+                }
+
+                return target.gameObject;
+            }
+
+            target = target.parent;
+        }
+
+        return null;
+    }
+
+    private void PickupItem(GameObject item)
+    {
+        if (item == null || handPosition == null)
+        {
+            return;
+        }
+
         currentItem = item;
+        currentItemName = item.name;
         isHoldingItem = true;
-        currentItemName = item.name; // 保存当前物品的名字
 
-        // 获取物品的Rigidbody（如果有）
         Rigidbody itemRigidbody = item.GetComponent<Rigidbody>();
         if (itemRigidbody != null)
         {
-            // 禁用物理效果
+            itemRigidbody.velocity = Vector3.zero;
+            itemRigidbody.angularVelocity = Vector3.zero;
             itemRigidbody.isKinematic = true;
         }
 
-        // 禁用物品的碰撞器（可选）
-        Collider itemCollider = item.GetComponent<Collider>();
-        if (itemCollider != null)
-        {
-            itemCollider.enabled = false;
-        }
+        SetItemCollidersEnabled(item, false);
 
-        // 将物品设置为手的子对象
-        item.transform.SetParent(handPosition);
-
-        // 重置物品的本地位置和旋转
+        item.transform.SetParent(handPosition, false);
         item.transform.localPosition = Vector3.zero;
         item.transform.localRotation = Quaternion.identity;
 
-        Debug.Log("已拾取物品: " + item.name);
+        Debug.Log("Picked up item: " + item.name);
     }
 
-    void DropItem()
+    private void DropItem()
     {
-        if (currentItem != null)
+        if (currentItem == null)
         {
-            // 移除父对象关系
-            currentItem.transform.SetParent(null);
-
-            // 重新启用物理效果
-            Rigidbody itemRigidbody = currentItem.GetComponent<Rigidbody>();
-            if (itemRigidbody != null)
-            {
-                itemRigidbody.isKinematic = false;
-
-                // 给物品一个轻微的向前抛出力（可选）
-                itemRigidbody.AddForce(playerCamera.transform.forward * 2.0f, ForceMode.Impulse);
-            }
-
-            // 重新启用碰撞器
-            Collider itemCollider = currentItem.GetComponent<Collider>();
-            if (itemCollider != null)
-            {
-                itemCollider.enabled = true;
-            }
-
-            Debug.Log("已放下物品: " + currentItem.name);
-
-            // 清除引用
-            currentItem = null;
-            currentItemName = "";
-            isHoldingItem = false;
+            ClearHeldItem();
+            return;
         }
+
+        currentItem.transform.SetParent(null);
+
+        Vector3 dropPosition = playerCamera.transform.position
+            + playerCamera.transform.forward * dropDistance
+            + Vector3.up * dropHeightOffset;
+
+        currentItem.transform.position = dropPosition;
+        currentItem.transform.rotation = Quaternion.LookRotation(playerCamera.transform.forward, Vector3.up);
+
+        SetItemCollidersEnabled(currentItem, true);
+        Physics.SyncTransforms();
+
+        Rigidbody itemRigidbody = currentItem.GetComponent<Rigidbody>();
+        if (itemRigidbody != null)
+        {
+            itemRigidbody.velocity = Vector3.zero;
+            itemRigidbody.angularVelocity = Vector3.zero;
+            itemRigidbody.useGravity = true;
+            itemRigidbody.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
+            itemRigidbody.interpolation = RigidbodyInterpolation.Interpolate;
+            itemRigidbody.isKinematic = false;
+            itemRigidbody.AddForce(playerCamera.transform.forward * dropForwardImpulse, ForceMode.Impulse);
+        }
+
+        Debug.Log("Dropped item: " + currentItem.name);
+        ClearHeldItem();
+    }
+
+    private void SetItemCollidersEnabled(GameObject item, bool enabled)
+    {
+        Collider[] itemColliders = item.GetComponentsInChildren<Collider>(true);
+        foreach (Collider itemCollider in itemColliders)
+        {
+            itemCollider.enabled = enabled;
+        }
+    }
+
+    private void ClearHeldItem()
+    {
+        currentItem = null;
+        currentItemName = "";
+        isHoldingItem = false;
     }
 }

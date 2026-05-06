@@ -1021,7 +1021,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 400250, guid: 97318fbbd96e1824c9f8390c74e20ed3, type: 3}
       propertyPath: m_RootOrder
-      value: 56
+      value: 55
       objectReference: {fileID: 0}
     - target: {fileID: 400250, guid: 97318fbbd96e1824c9f8390c74e20ed3, type: 3}
       propertyPath: m_LocalScale.x
@@ -1149,6 +1149,25 @@ BoxCollider:
   serializedVersion: 2
   m_Size: {x: 0.44556105, y: 0.43682674, z: 0.445561}
   m_Center: {x: 0.000000022351742, y: 0.21841337, z: 0}
+--- !u!114 &74682163
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 74682154}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b75aa4f18a7f4e42b499ec82c18256a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  acceptedKeyName: Key_l3_exit
+  destroyKeyOnPlace: 1
+  placedKeyVisual: {fileID: 0}
+  placedPoint: {fileID: 0}
+  objectsToEnable: []
+  objectsToDisable: []
+  interactionRange: 3
 --- !u!4 &81100202 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 400000, guid: 0a3041dcda597954782f48ac8a97bf33, type: 3}
@@ -2799,6 +2818,28 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 25e59d8713eb84b9ca7a1be454f33a30, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &224420203
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 224420184}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 628b2932cba834e95b83d7013a4fcc03, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  oilItemName: FireBall_l3
+  baseItemName: lantern_base_l3
+  wickItemName: l3_wick
+  oilPlacedVisual: {fileID: 0}
+  basePlacedVisual: {fileID: 0}
+  wickPlacedVisual: {fileID: 0}
+  lampObject: {fileID: 0}
+  lampSpawnPoint: {fileID: 0}
+  hideLampUntilCrafted: 1
+  interactionRange: 3
 --- !u!1001 &230611341
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -6815,6 +6856,24 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   normalColor: {r: 0, g: 1, b: 0, a: 0}
   hoverColor: {r: 0.1125586, g: 1, b: 0, a: 1}
+--- !u!114 &539197854
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 539197838}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 28ba76dac63a442d6854a99ba2f1bccf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  torchForIcePrefabOrObject: {fileID: 0}
+  heldTorchName: torch_for_ice_l3
+  instantiateTorch: 1
+  giveOnlyOnce: 1
+  lightTorchWhenGiven: 1
+  interactionRange: 3
 --- !u!1001 &540494155
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -8523,6 +8582,10 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 100000, guid: 80b08148bd1b80d47aeb3043fe86d434, type: 3}
+      propertyPath: m_TagString
+      value: Pickup
+      objectReference: {fileID: 0}
     - target: {fileID: 400000, guid: 80b08148bd1b80d47aeb3043fe86d434, type: 3}
       propertyPath: m_RootOrder
       value: 3
@@ -9886,6 +9949,29 @@ PrefabInstance:
       objectReference: {fileID: 2100000, guid: 1fe0bf56d0e15604689d9bae86d0c047, type: 2}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 0a3041dcda597954782f48ac8a97bf33, type: 3}
+--- !u!1 &798501437 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 510141063021254879, guid: 7a937ee5bc40ba142a195e3a41fa7258, type: 3}
+  m_PrefabInstance: {fileID: 48647077}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &798501442
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 798501437}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 28ba76dac63a442d6854a99ba2f1bccf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  torchForIcePrefabOrObject: {fileID: 0}
+  heldTorchName: torch_for_ice_l3
+  instantiateTorch: 1
+  giveOnlyOnce: 1
+  lightTorchWhenGiven: 1
+  interactionRange: 3
 --- !u!1001 &817125866
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -11723,89 +11809,6 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 4963b55652180e946b10fda98efef25e, type: 3}
---- !u!1 &988282215
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 988282218}
-  - component: {fileID: 988282217}
-  - component: {fileID: 988282216}
-  m_Layer: 0
-  m_Name: Torch.001
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!23 &988282216
-MeshRenderer:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 988282215}
-  m_Enabled: 1
-  m_CastShadows: 1
-  m_ReceiveShadows: 1
-  m_DynamicOccludee: 1
-  m_StaticShadowCaster: 0
-  m_MotionVectors: 1
-  m_LightProbeUsage: 1
-  m_ReflectionProbeUsage: 1
-  m_RayTracingMode: 2
-  m_RayTraceProcedural: 0
-  m_RenderingLayerMask: 1
-  m_RendererPriority: 0
-  m_Materials:
-  - {fileID: 0}
-  m_StaticBatchInfo:
-    firstSubMesh: 0
-    subMeshCount: 0
-  m_StaticBatchRoot: {fileID: 0}
-  m_ProbeAnchor: {fileID: 0}
-  m_LightProbeVolumeOverride: {fileID: 0}
-  m_ScaleInLightmap: 1
-  m_ReceiveGI: 1
-  m_PreserveUVs: 0
-  m_IgnoreNormalsForChartDetection: 0
-  m_ImportantGI: 0
-  m_StitchLightmapSeams: 1
-  m_SelectedEditorRenderState: 3
-  m_MinimumChartSize: 4
-  m_AutoUVMaxDistance: 0.5
-  m_AutoUVMaxAngle: 89
-  m_LightmapParameters: {fileID: 0}
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
-  m_SortingOrder: 0
-  m_AdditionalVertexStreams: {fileID: 0}
---- !u!33 &988282217
-MeshFilter:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 988282215}
-  m_Mesh: {fileID: 1648318550784961951, guid: edcc86a903182d0429c0d7b2c727fec0, type: 3}
---- !u!4 &988282218
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 988282215}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -49.353, y: -0.039, z: 76.12743}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_RootOrder: 55
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &992263296
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -15333,6 +15336,24 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 28
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1343503282 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 100000, guid: 9fad38ab673e5aa47a08b7b438256715, type: 3}
+  m_PrefabInstance: {fileID: 1054531991}
+  m_PrefabAsset: {fileID: 0}
+--- !u!65 &1343503286
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1343503282}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Size: {x: 0.08554116, y: 0.06415606, z: 0.7873475}
+  m_Center: {x: -0.0056931973, y: 0.039108004, z: 0}
 --- !u!1 &1343627789
 GameObject:
   m_ObjectHideFlags: 0
@@ -15942,7 +15963,7 @@ BoxCollider:
   m_IsTrigger: 0
   m_Enabled: 1
   serializedVersion: 2
-  m_Size: {x: 0.10198288, y: 0.9080354, z: 0.10354447}
+  m_Size: {x: 0.25, y: 0.9, z: 0.25}
   m_Center: {x: 0.0010595303, y: 0.4540177, z: 0.0001739692}
 --- !u!54 &1377250533
 Rigidbody:
@@ -15959,7 +15980,7 @@ Rigidbody:
   m_IsKinematic: 0
   m_Interpolate: 0
   m_Constraints: 0
-  m_CollisionDetection: 0
+  m_CollisionDetection: 3
 --- !u!1001 &1381009423
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -18628,6 +18649,9 @@ MonoBehaviour:
   pickupLayer:
     serializedVersion: 2
     m_Bits: 1
+  dropDistance: 1.2
+  dropHeightOffset: -0.25
+  dropForwardImpulse: 0.75
   currentItem: {fileID: 0}
   isHoldingItem: 0
   currentItemName: 
@@ -21367,6 +21391,30 @@ PrefabInstance:
       objectReference: {fileID: 2100000, guid: 1fe0bf56d0e15604689d9bae86d0c047, type: 2}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 0a3041dcda597954782f48ac8a97bf33, type: 3}
+--- !u!1 &1884553355 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 5721723476799238222, guid: 4adae8232505e0e45b64cc3b61e9d9e1, type: 3}
+  m_PrefabInstance: {fileID: 305561633}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1884553360
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1884553355}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cc18f7be9632146699f47f54e281d592, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  targetDoor: {fileID: 0}
+  targetOffset: {x: 0, y: 0, z: 0}
+  faceTargetForward: 1
+  requireHeldItem: 0
+  requiredHeldItemName: lamp_l3
+  keepUnlockedAfterSuccessfulUse: 1
+  interactionRange: 3
 --- !u!1001 &1892417517
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -24001,6 +24049,7 @@ GameObject:
   - component: {fileID: 2114667334}
   - component: {fileID: 2114667333}
   - component: {fileID: 2114667332}
+  - component: {fileID: 2114667335}
   m_Layer: 0
   m_Name: Door_3th
   m_TagString: Untagged
@@ -24073,6 +24122,25 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 53
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2114667335
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2114667331}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cc18f7be9632146699f47f54e281d592, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  targetDoor: {fileID: 0}
+  targetOffset: {x: 0, y: 0, z: 0}
+  faceTargetForward: 1
+  requireHeldItem: 0
+  requiredHeldItemName: lamp_l3
+  keepUnlockedAfterSuccessfulUse: 1
+  interactionRange: 3
 --- !u!1001 &2119170047
 PrefabInstance:
   m_ObjectHideFlags: 0

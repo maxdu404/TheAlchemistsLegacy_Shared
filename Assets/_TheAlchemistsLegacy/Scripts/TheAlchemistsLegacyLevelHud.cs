@@ -2,7 +2,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
-public class Level0TutorialHud : MonoBehaviour
+public class TheAlchemistsLegacyLevelHud : MonoBehaviour
 {
     [Header("Behavior")]
     [SerializeField] private bool hideExistingCanvases = true;
@@ -16,7 +16,7 @@ public class Level0TutorialHud : MonoBehaviour
     [SerializeField] private string secondSlotName = "StampSlot_2";
     [SerializeField] private string fireBarrierName = "traps_fire";
 
-    private const string CanvasName = "TheAlchemistsLegacy_Level0HUD";
+    private const string CanvasName = "TheAlchemistsLegacy_LevelHUD";
     private const string TrialCompleteSceneName = "TrailComplete";
 
     private Canvas hudCanvas;
@@ -35,17 +35,20 @@ public class Level0TutorialHud : MonoBehaviour
     private Level1PedestalController level1Pedestal;
     private Level1FurnaceController level1Furnace;
     private Level2TorchSequenceController level2Sequence;
+    private Level3FurnaceCrafting level3Furnace;
+    private Level3ExitKeySlot level3ExitSlot;
     private GameObject level2GateObject;
     private GameObject scrollObject;
     private GameObject chestObject;
     private GameObject doorObject;
     private GameObject fireBarrierObject;
-    private bool hasReadScroll;
     private bool isIntroOpen;
     private bool isScrollOpen;
     private Font defaultFont;
     private bool isLevel1Scene;
     private bool isLevel2Scene;
+    private bool isLevel3Scene;
+    private bool isLevel4Scene;
 
     private void Start()
     {
@@ -54,6 +57,8 @@ public class Level0TutorialHud : MonoBehaviour
         string sceneName = SceneManager.GetActiveScene().name;
         isLevel1Scene = sceneName == "Level1";
         isLevel2Scene = sceneName == "Level2";
+        isLevel3Scene = sceneName == "Level3";
+        isLevel4Scene = sceneName == "Level4";
         CacheReferences();
 
         if (hideExistingCanvases)
@@ -96,7 +101,6 @@ public class Level0TutorialHud : MonoBehaviour
 
         if (!isLevel1Scene && Input.GetMouseButtonDown(1) && IsLookingAt(scrollObject))
         {
-            hasReadScroll = true;
             SetScrollOpen(true);
             return;
         }
@@ -191,6 +195,42 @@ public class Level0TutorialHud : MonoBehaviour
             return;
         }
 
+        if (isLevel3Scene)
+        {
+            if (scrollObject == null)
+            {
+                scrollObject = GameObject.Find("scroll_l3");
+            }
+
+            if (doorObject == null)
+            {
+                doorObject = GameObject.Find("Door_l3_exit");
+            }
+
+            if (fireBarrierObject == null)
+            {
+                fireBarrierObject = GameObject.Find("Traps_l3_exit");
+            }
+
+            if (level3Furnace == null)
+            {
+                level3Furnace = FindObjectOfType<Level3FurnaceCrafting>();
+            }
+
+            if (level3ExitSlot == null)
+            {
+                level3ExitSlot = FindObjectOfType<Level3ExitKeySlot>();
+            }
+
+            return;
+        }
+
+        if (isLevel4Scene)
+        {
+            // Reserved for the final level's HUD references.
+            return;
+        }
+
         if (scrollObject == null)
         {
             scrollObject = GameObject.Find(scrollName);
@@ -276,7 +316,11 @@ public class Level0TutorialHud : MonoBehaviour
         RectTransform rect = panel.GetComponent<RectTransform>();
         Anchor(rect, new Vector2(0.0f, 1.0f), new Vector2(0.0f, 1.0f), new Vector2(26.0f, -24.0f), new Vector2(650.0f, 108.0f), new Vector2(0.0f, 1.0f));
 
-        string titleTextValue = isLevel2Scene ? "Flame Trial" : isLevel1Scene ? "Workshop Trial" : "Apprentice Trial";
+        string titleTextValue = isLevel4Scene
+            ? "Legacy Trial"
+            : isLevel3Scene
+                ? "Lantern Trial"
+                : isLevel2Scene ? "Flame Trial" : isLevel1Scene ? "Workshop Trial" : "Apprentice Trial";
         Text title = CreateText(panel.transform, "Title", titleTextValue, 28, new Color(1.0f, 0.86f, 0.52f), TextAnchor.UpperLeft);
         Anchor(title.rectTransform, new Vector2(0.0f, 1.0f), new Vector2(1.0f, 1.0f), new Vector2(18.0f, -14.0f), new Vector2(-36.0f, 36.0f), new Vector2(0.0f, 1.0f));
 
@@ -290,9 +334,11 @@ public class Level0TutorialHud : MonoBehaviour
         RectTransform rect = panel.GetComponent<RectTransform>();
         Anchor(rect, new Vector2(0.0f, 0.0f), new Vector2(0.0f, 0.0f), new Vector2(26.0f, 26.0f), new Vector2(1030.0f, 74.0f), new Vector2(0.0f, 0.0f));
 
-        string controlsText = isLevel2Scene
-            ? "WASD: Move    E: Pick up / drop    Right Click: Read or light    Y: Trial Complete"
-            : "WASD: Move    E: Pick up / drop    Right Click: Read, open, or place    Y: Trial Complete";
+        string controlsText = isLevel3Scene
+            ? "WASD: Move    E: Pick up / drop    Right Click: Read, open, craft, or travel    Y: Level Complete"
+            : isLevel2Scene
+                ? "WASD: Move    E: Pick up / drop    Right Click: Read or light    Y: Level Complete"
+                : "WASD: Move    E: Pick up / drop    Right Click: Read, open, or place    Y: Level Complete";
         Text controls = CreateText(panel.transform, "ControlsText", controlsText, 20, Color.white, TextAnchor.MiddleLeft);
         Anchor(controls.rectTransform, new Vector2(0.0f, 0.0f), new Vector2(1.0f, 1.0f), new Vector2(18.0f, 0.0f), new Vector2(-36.0f, 0.0f), new Vector2(0.0f, 0.5f));
     }
@@ -375,7 +421,7 @@ public class Level0TutorialHud : MonoBehaviour
 
     private string GetScrollTitle()
     {
-        return isLevel2Scene ? "Stone Tablet" : "Master's Note";
+        return isLevel3Scene ? "The Master's Lantern" : isLevel2Scene ? "Stone Tablet" : "Master's Note";
     }
 
     private string GetScrollBody()
@@ -383,6 +429,16 @@ public class Level0TutorialHud : MonoBehaviour
         if (isLevel2Scene)
         {
             return "Three waiting flames remember the way.\n\nFirst, wake the light nearest your first shelter.\nThen seek the flame watched by the quiet wall.\nLast, carry the memory to the black gate.";
+        }
+
+        if (isLevel3Scene)
+        {
+            return "Three parts wake the master's lamp.\n\nOil waits beneath the orange campfire.\nThe base is trapped in winter's grip.\nThe wick is locked where the raised house keeps its secrets.\n\nBorrow flame from the birth house wall, then bring all three parts to the castle furnace.";
+        }
+
+        if (isLevel4Scene)
+        {
+            return "Three relics, each to its mark.\nThe legacy is set in stone.";
         }
 
         return "Apprentice,\n\nTwo seals wake the old door.\nOne rests in the open. One waits inside the chest.\n\nLet the first seal answer the left hand of the room.\nLet the second complete the right.\n\nCross only when the fire fades.";
@@ -400,7 +456,17 @@ public class Level0TutorialHud : MonoBehaviour
             return "Apprentice,\n\nThree quiet seals lie where habit seldom lingers. One waits beneath a lid, while two keep to the room's far edges.\n\nOffer them to the basin at the workshop's heart, and the sleeping forge will remember its breath.";
         }
 
-        return "Apprentice,\n\nYou wake inside the old workshop. The master has left a final trial: learn the room, recover two stamps, and prove you can follow the marks of the craft.\n\nRead the note on the table first. It explains how to open the way out.";
+        if (isLevel3Scene)
+        {
+            return "Apprentice,\n\nThis third trial asks for more than a key. Build the lantern, carry its light upward, and recover the exit key from the third floor.\n\nThe dark door will not answer empty hands.";
+        }
+
+        if (isLevel4Scene)
+        {
+            return "Apprentice,\n\nThe final legacy waits beyond the estate. Observe the marks, recover the relics, and set each one where it belongs.";
+        }
+
+        return "Apprentice,\n\nYou wake inside the old workshop. The master has left your first trial: learn the room, recover two stamps, and prove you can follow the marks of the craft.\n\nRead the note on the table first. It explains how to open the way out.";
     }
 
     private void UpdateObjective()
@@ -420,6 +486,24 @@ public class Level0TutorialHud : MonoBehaviour
             objectiveText.text = pathOpen
                 ? "Goal: the way is clear. Leave the workshop."
                 : "Goal: wake the forge and find the quiet way out.";
+            return;
+        }
+
+        if (isLevel3Scene)
+        {
+            bool exitOpen = level3ExitSlot != null && level3ExitSlot.IsFilled;
+            bool lampCrafted = level3Furnace != null && level3Furnace.IsCrafted;
+            objectiveText.text = exitOpen
+                ? "Goal: the exit is open. Leave Level 3."
+                : lampCrafted
+                    ? "Goal: carry the lamp upstairs and find the exit key."
+                    : "Goal: collect oil, base, and wick to craft the lamp.";
+            return;
+        }
+
+        if (isLevel4Scene)
+        {
+            objectiveText.text = "Goal: place each relic on its matching mark.";
             return;
         }
 
@@ -467,6 +551,16 @@ public class Level0TutorialHud : MonoBehaviour
         if (isLevel2Scene)
         {
             return GetLevel2LookPrompt(hit);
+        }
+
+        if (isLevel3Scene)
+        {
+            return GetLevel3LookPrompt(hit);
+        }
+
+        if (isLevel4Scene)
+        {
+            return GetLevel4LookPrompt(hit);
         }
 
         return isLevel1Scene ? GetLevel1LookPrompt(hit) : GetLevel0LookPrompt(hit);
@@ -638,9 +732,126 @@ public class Level0TutorialHud : MonoBehaviour
         return "";
     }
 
+
+    private string GetLevel3LookPrompt(RaycastHit hit)
+    {
+        Transform target = hit.collider.transform;
+
+        if (Matches(target, scrollObject))
+        {
+            return "Right Click: Read the lantern note";
+        }
+
+        if (target.GetComponentInParent<Level3TorchGiver>() != null)
+        {
+            return "Right Click: Take the wall torch";
+        }
+
+        if (target.GetComponentInParent<Level3KeyChest>() != null)
+        {
+            return itemPickup != null && itemPickup.isHoldingItem
+                ? "Right Click: Unlock the chest"
+                : "Find the chest key first.";
+        }
+
+        if (target.GetComponentInParent<Level3FurnaceCrafting>() != null)
+        {
+            return itemPickup != null && itemPickup.isHoldingItem
+                ? "Right Click: Add this lamp part"
+                : "Bring oil, base, and wick here.";
+        }
+
+        Level3DoorTeleporter teleporter = target.GetComponentInParent<Level3DoorTeleporter>();
+        if (teleporter != null)
+        {
+            string lowerName = teleporter.gameObject.name.ToLowerInvariant();
+            if (lowerName.Contains("1th"))
+            {
+                bool holdingLamp = itemPickup != null
+                    && itemPickup.isHoldingItem
+                    && itemPickup.currentItemName.ToLowerInvariant().Contains("lamp_l3");
+                return holdingLamp ? "Right Click: Carry the lamp upstairs" : "The upper door needs the lamp.";
+            }
+
+            return "Right Click: Return to the first floor";
+        }
+
+        Level3ExitKeySlot exitSlot = target.GetComponentInParent<Level3ExitKeySlot>();
+        if (exitSlot != null)
+        {
+            if (exitSlot.IsFilled)
+            {
+                return "The exit key is set.";
+            }
+
+            return itemPickup != null && itemPickup.isHoldingItem
+                ? "Right Click: Place the exit key"
+                : "Find Key_l3_exit on the third floor.";
+        }
+
+        if (Matches(target, fireBarrierObject) || IsFireOrTrapTarget(target))
+        {
+            bool exitOpen = level3ExitSlot != null && level3ExitSlot.IsFilled;
+            return exitOpen ? "The exit path is clear." : "Place the third-floor key before leaving.";
+        }
+
+        if (hit.collider.CompareTag("Pickup"))
+        {
+            return GetPickupPrompt(hit.collider.gameObject);
+        }
+
+        if (Matches(target, doorObject) || target.name.ToLowerInvariant().Contains("door"))
+        {
+            bool exitOpen = level3ExitSlot != null && level3ExitSlot.IsFilled;
+            return exitOpen ? "Walk forward to complete Level 3" : "The exit key has not been set.";
+        }
+
+        return "";
+    }
+
+    private string GetLevel4LookPrompt(RaycastHit hit)
+    {
+        if (hit.collider.CompareTag("Pickup"))
+        {
+            return GetPickupPrompt(hit.collider.gameObject);
+        }
+
+        return "";
+    }
+
     private string GetPickupPrompt(GameObject item)
     {
         string lowerName = item.name.ToLowerInvariant();
+
+        if (lowerName.Contains("fireball_l3"))
+        {
+            return "E: Take the lamp oil";
+        }
+
+        if (lowerName.Contains("lantern_base_l3"))
+        {
+            return "E: Take the lantern base";
+        }
+
+        if (lowerName.Contains("l3_wick"))
+        {
+            return "E: Take the wick";
+        }
+
+        if (lowerName.Contains("key_l3_chest"))
+        {
+            return "E: Take the chest key";
+        }
+
+        if (lowerName.Contains("key_l3_exit"))
+        {
+            return "E: Take the exit key";
+        }
+
+        if (lowerName.Contains("lamp_l3"))
+        {
+            return "E: Take the lantern";
+        }
 
         if (lowerName.Contains("torch_level2"))
         {
@@ -678,6 +889,41 @@ public class Level0TutorialHud : MonoBehaviour
         }
 
         string lowerName = item.name.ToLowerInvariant();
+
+        if (lowerName.Contains("fireball_l3"))
+        {
+            return "Lamp Oil";
+        }
+
+        if (lowerName.Contains("lantern_base_l3"))
+        {
+            return "Lantern Base";
+        }
+
+        if (lowerName.Contains("l3_wick"))
+        {
+            return "Lantern Wick";
+        }
+
+        if (lowerName.Contains("key_l3_chest"))
+        {
+            return "Chest Key";
+        }
+
+        if (lowerName.Contains("key_l3_exit"))
+        {
+            return "Exit Key";
+        }
+
+        if (lowerName.Contains("torch_for_ice_l3"))
+        {
+            return "Ice Torch";
+        }
+
+        if (lowerName.Contains("lamp_l3"))
+        {
+            return "Master's Lantern";
+        }
 
         if (lowerName.Contains("torch_level2"))
         {
