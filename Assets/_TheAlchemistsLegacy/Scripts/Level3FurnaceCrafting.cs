@@ -26,6 +26,21 @@ public class Level3FurnaceCrafting : MonoBehaviour
         get { return isCrafted; }
     }
 
+    public bool HasOil
+    {
+        get { return hasOil; }
+    }
+
+    public bool HasBase
+    {
+        get { return hasBase; }
+    }
+
+    public bool HasWick
+    {
+        get { return hasWick; }
+    }
+
     private bool hasOil;
     private bool hasBase;
     private bool hasWick;

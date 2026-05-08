@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class Level3ExitKeySlot : MonoBehaviour
@@ -14,6 +15,9 @@ public class Level3ExitKeySlot : MonoBehaviour
     [Header("Exit Result")]
     [SerializeField] private GameObject[] objectsToEnable;
     [SerializeField] private GameObject[] objectsToDisable;
+    [SerializeField] private bool autoConfigureExitObjects = true;
+    [SerializeField] private string[] objectNamesToEnable = { "Door_l3_exit" };
+    [SerializeField] private string[] objectNamesToDisable = { "Dungeon_Floor_Trap_Star", "Traps_l3_exit" };
 
     [Header("Interaction")]
     [SerializeField] private float interactionRange = 3.0f;
@@ -31,6 +35,7 @@ public class Level3ExitKeySlot : MonoBehaviour
     {
         playerCamera = Camera.main;
         playerPickup = ItemPickup.instance != null ? ItemPickup.instance : FindObjectOfType<ItemPickup>();
+        AutoConfigureExitObjects();
 
         if (placedKeyVisual != null)
         {
@@ -149,9 +154,49 @@ public class Level3ExitKeySlot : MonoBehaviour
 
     private void UnlockExit()
     {
+        AutoConfigureExitObjects();
         SetObjectsActive(objectsToEnable, true);
         SetObjectsActive(objectsToDisable, false);
         Debug.Log("Level 3 exit unlocked.");
+    }
+
+    private void AutoConfigureExitObjects()
+    {
+        if (!autoConfigureExitObjects)
+        {
+            return;
+        }
+
+        if ((objectsToEnable == null || objectsToEnable.Length == 0) && objectNamesToEnable != null)
+        {
+            objectsToEnable = FindSceneObjects(objectNamesToEnable);
+        }
+
+        if ((objectsToDisable == null || objectsToDisable.Length == 0) && objectNamesToDisable != null)
+        {
+            objectsToDisable = FindSceneObjects(objectNamesToDisable);
+        }
+    }
+
+    private GameObject[] FindSceneObjects(string[] objectNames)
+    {
+        List<GameObject> foundObjects = new List<GameObject>();
+
+        foreach (string objectName in objectNames)
+        {
+            if (string.IsNullOrEmpty(objectName))
+            {
+                continue;
+            }
+
+            GameObject foundObject = GameObject.Find(objectName);
+            if (foundObject != null && !foundObjects.Contains(foundObject))
+            {
+                foundObjects.Add(foundObject);
+            }
+        }
+
+        return foundObjects.ToArray();
     }
 
     private void SetObjectsActive(GameObject[] objects, bool active)

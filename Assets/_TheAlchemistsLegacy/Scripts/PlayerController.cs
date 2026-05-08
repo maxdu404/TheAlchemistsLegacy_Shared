@@ -141,4 +141,26 @@ public class PlayerController : MonoBehaviour
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
     }
+
+    public void ForceLookDirection(Vector3 worldForward, float pitch = 0f)
+    {
+        worldForward.y = 0f;
+        if (worldForward.sqrMagnitude < 0.001f)
+        {
+            return;
+        }
+
+        transform.rotation = Quaternion.LookRotation(worldForward.normalized, Vector3.up);
+        rotationX = Mathf.Clamp(pitch, maxLookDownAngle, maxLookUpAngle);
+
+        if (playerCamera == null)
+        {
+            playerCamera = GetComponentInChildren<Camera>();
+        }
+
+        if (playerCamera != null)
+        {
+            playerCamera.transform.localRotation = Quaternion.Euler(rotationX, 0f, 0f);
+        }
+    }
 }

@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class ItemSlotController : MonoBehaviour
 {
@@ -45,10 +46,36 @@ public class ItemSlotController : MonoBehaviour
         playerCamera = Camera.main;
         playerPickup = ItemPickup.instance != null ? ItemPickup.instance : FindObjectOfType<ItemPickup>();
 
+        if (placedVisual == null)
+        {
+            placedVisual = FindAutoPlacedVisual();
+        }
+
         if (placedVisual != null)
         {
             placedVisual.SetActive(false);
         }
+    }
+
+    private GameObject FindAutoPlacedVisual()
+    {
+        string lowerSlotName = gameObject.name.ToLowerInvariant();
+        bool isFinalSealSlot = lowerSlotName.Contains("doorsealslot")
+            || lowerSlotName.Contains("door_seal_slot")
+            || acceptedItemName.IndexOf("FinalSeal", StringComparison.OrdinalIgnoreCase) >= 0;
+
+        if (!isFinalSealSlot)
+        {
+            return null;
+        }
+
+        GameObject visual = FindSceneObjectByName("FinalSeal_Placed");
+        if (visual != null)
+        {
+            return visual;
+        }
+
+        return FindSceneObjectByName("FinalSealPlaced");
     }
 
     private void ConfigureAcceptedItemFromSlotName()
@@ -72,6 +99,45 @@ public class ItemSlotController : MonoBehaviour
         {
             acceptedItemName = "Stamp2";
         }
+    }
+
+    private GameObject FindSceneObjectByName(string objectName)
+    {
+        if (string.IsNullOrEmpty(objectName))
+        {
+            return null;
+        }
+
+        Scene activeScene = SceneManager.GetActiveScene();
+        foreach (GameObject rootObject in activeScene.GetRootGameObjects())
+        {
+            Transform match = FindChildByName(rootObject.transform, objectName);
+            if (match != null && match.gameObject != gameObject)
+            {
+                return match.gameObject;
+            }
+        }
+
+        return null;
+    }
+
+    private Transform FindChildByName(Transform root, string objectName)
+    {
+        if (root.name.Equals(objectName, StringComparison.OrdinalIgnoreCase))
+        {
+            return root;
+        }
+
+        foreach (Transform child in root)
+        {
+            Transform match = FindChildByName(child, objectName);
+            if (match != null)
+            {
+                return match;
+            }
+        }
+
+        return null;
     }
 
     private void Update()

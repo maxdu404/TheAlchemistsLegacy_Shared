@@ -7,6 +7,7 @@ public class Level3DoorTeleporter : MonoBehaviour
     [SerializeField] private Transform targetDoor;
     [SerializeField] private Vector3 targetOffset = Vector3.zero;
     [SerializeField] private bool faceTargetForward = true;
+    [SerializeField] private bool faceNegativeZAfterTeleport = true;
 
     [Header("Requirement")]
     [SerializeField] private bool requireHeldItem = false;
@@ -15,11 +16,16 @@ public class Level3DoorTeleporter : MonoBehaviour
 
     [Header("Interaction")]
     [SerializeField] private float interactionRange = 3.0f;
+    [SerializeField] private bool teleportWhenPlayerIsNear = false;
+    [SerializeField] private float proximityRange = 2.0f;
+    [SerializeField] private float teleportCooldown = 1.0f;
 
     private Camera playerCamera;
     private ItemPickup playerPickup;
     private CharacterController playerController;
+    private Transform playerTransform;
     private bool isUnlocked;
+    private static float lastTeleportTime = -999.0f;
 
     private void Start()
     {
@@ -29,15 +35,65 @@ public class Level3DoorTeleporter : MonoBehaviour
         GameObject player = GameObject.FindGameObjectWithTag("Player");
         if (player != null)
         {
+            playerTransform = player.transform;
             playerController = player.GetComponent<CharacterController>();
         }
     }
 
     private void Update()
     {
+        if (teleportWhenPlayerIsNear)
+        {
+            TryTeleportFromProximity();
+        }
+
         if (Input.GetMouseButtonDown(1))
         {
             TryTeleport();
+        }
+    }
+
+    private void TryTeleportFromProximity()
+    {
+        if (Time.time - lastTeleportTime < teleportCooldown)
+        {
+            return;
+        }
+
+        if (targetDoor == null)
+        {
+            return;
+        }
+
+        if (playerTransform == null)
+        {
+            GameObject player = GameObject.FindGameObjectWithTag("Player");
+            if (player == null)
+            {
+                return;
+            }
+
+            playerTransform = player.transform;
+            playerController = player.GetComponent<CharacterController>();
+        }
+
+        float distance = Vector3.Distance(playerTransform.position, transform.position);
+        if (distance > proximityRange)
+        {
+            return;
+        }
+
+        if (!CanUseDoor())
+        {
+            return;
+        }
+
+        TeleportPlayer();
+        lastTeleportTime = Time.time;
+
+        if (keepUnlockedAfterSuccessfulUse)
+        {
+            isUnlocked = true;
         }
     }
 
@@ -81,6 +137,7 @@ public class Level3DoorTeleporter : MonoBehaviour
         }
 
         TeleportPlayer();
+        lastTeleportTime = Time.time;
 
         if (keepUnlockedAfterSuccessfulUse)
         {
@@ -140,7 +197,11 @@ public class Level3DoorTeleporter : MonoBehaviour
 
         player.transform.position = targetDoor.position + targetOffset;
 
-        if (faceTargetForward)
+        if (faceNegativeZAfterTeleport)
+        {
+            ForcePlayerLookDirection(player, Vector3.back);
+        }
+        else if (faceTargetForward)
         {
             Vector3 eulerAngles = player.transform.eulerAngles;
             eulerAngles.y = targetDoor.eulerAngles.y;
@@ -154,5 +215,27 @@ public class Level3DoorTeleporter : MonoBehaviour
         }
 
         Debug.Log("Teleported from " + gameObject.name + " to " + targetDoor.name);
+    }
+
+    private void ForcePlayerLookDirection(GameObject player, Vector3 worldForward)
+    {
+        PlayerController playerControllerScript = player.GetComponent<PlayerController>();
+        if (playerControllerScript != null)
+        {
+            playerControllerScript.ForceLookDirection(worldForward, 0.0f);
+            return;
+        }
+
+        worldForward.y = 0.0f;
+        if (worldForward.sqrMagnitude > 0.001f)
+        {
+            player.transform.rotation = Quaternion.LookRotation(worldForward.normalized, Vector3.up);
+        }
+
+        Camera playerCamera = player.GetComponentInChildren<Camera>();
+        if (playerCamera != null)
+        {
+            playerCamera.transform.localRotation = Quaternion.identity;
+        }
     }
 }

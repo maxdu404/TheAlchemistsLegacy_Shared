@@ -15,6 +15,11 @@ public class Level2TorchSequenceController : MonoBehaviour
     [SerializeField] private GameObject[] barriersToDisable;
     [SerializeField] private bool autoFindExitObjects = true;
 
+    [Header("Birth Door Unlock")]
+    [SerializeField] private bool unlockBirthDoorWhenTorchPicked = true;
+    [SerializeField] private GameObject birthDoorObject;
+    [SerializeField] private string birthDoorObjectName = "Door_birth";
+
     [Header("Scene Exit")]
     [SerializeField] private string sceneToLoad = "TrailComplete";
     [SerializeField] private bool loadOnPlayerTrigger = true;
@@ -24,11 +29,13 @@ public class Level2TorchSequenceController : MonoBehaviour
     [SerializeField] private Transform player;
 
     public bool ExitUnlocked => exitUnlocked;
+    public bool BirthDoorUnlocked => birthDoorUnlocked;
 
     private Camera playerCamera;
     private ItemPickup itemPickup;
     private int nextTorchIndex;
     private bool exitUnlocked;
+    private bool birthDoorUnlocked;
     private bool isLoading;
 
     private void Start()
@@ -36,6 +43,7 @@ public class Level2TorchSequenceController : MonoBehaviour
         AutoConfigureReferences();
         ResetTorchSequence();
         SetBarriersActive(true);
+        LockBirthDoor();
     }
 
     private void Reset()
@@ -45,6 +53,11 @@ public class Level2TorchSequenceController : MonoBehaviour
 
     private void Update()
     {
+        if (!birthDoorUnlocked && unlockBirthDoorWhenTorchPicked && PlayerIsHoldingLightingTool())
+        {
+            UnlockBirthDoor();
+        }
+
         if (!exitUnlocked && Input.GetMouseButtonDown(1))
         {
             TryLightTorchFromView();
@@ -193,6 +206,97 @@ public class Level2TorchSequenceController : MonoBehaviour
         }
     }
 
+    private void LockBirthDoor()
+    {
+        if (!unlockBirthDoorWhenTorchPicked)
+        {
+            return;
+        }
+
+        if (birthDoorObject == null)
+        {
+            birthDoorObject = FindSceneObjectByName(birthDoorObjectName);
+        }
+
+        if (birthDoorObject == null)
+        {
+            return;
+        }
+
+        foreach (Collider doorCollider in birthDoorObject.GetComponentsInChildren<Collider>(true))
+        {
+            doorCollider.enabled = true;
+        }
+
+        birthDoorUnlocked = false;
+    }
+
+    private void UnlockBirthDoor()
+    {
+        if (!unlockBirthDoorWhenTorchPicked)
+        {
+            return;
+        }
+
+        if (birthDoorObject == null)
+        {
+            birthDoorObject = FindSceneObjectByName(birthDoorObjectName);
+        }
+
+        if (birthDoorObject == null)
+        {
+            Debug.LogWarning("Level2TorchSequenceController could not find " + birthDoorObjectName + ".");
+            return;
+        }
+
+        foreach (Collider doorCollider in birthDoorObject.GetComponentsInChildren<Collider>(true))
+        {
+            doorCollider.enabled = false;
+        }
+
+        birthDoorUnlocked = true;
+        Debug.Log("Unlocked " + birthDoorObject.name + " after receiving " + lightingToolName + ".");
+    }
+
+    private GameObject FindSceneObjectByName(string objectName)
+    {
+        if (string.IsNullOrWhiteSpace(objectName))
+        {
+            return null;
+        }
+
+        Scene activeScene = SceneManager.GetActiveScene();
+        foreach (GameObject rootObject in activeScene.GetRootGameObjects())
+        {
+            Transform match = FindChildByName(rootObject.transform, objectName);
+            if (match != null)
+            {
+                return match.gameObject;
+            }
+        }
+
+        return null;
+    }
+
+    private Transform FindChildByName(Transform root, string objectName)
+    {
+        if (root.name == objectName)
+        {
+            return root;
+        }
+
+        foreach (Transform child in root)
+        {
+            Transform match = FindChildByName(child, objectName);
+            if (match != null)
+            {
+                return match;
+            }
+        }
+
+        return null;
+    }
+
     private void AutoConfigureReferences()
     {
         if (playerCamera == null)
@@ -219,6 +323,11 @@ public class Level2TorchSequenceController : MonoBehaviour
                 GameObject.Find("Gate_Level2_Exit"),
                 GameObject.Find("Traps_l2_exit")
             }.Where(target => target != null).ToArray();
+        }
+
+        if (birthDoorObject == null)
+        {
+            birthDoorObject = FindSceneObjectByName(birthDoorObjectName);
         }
 
         if (player == null)

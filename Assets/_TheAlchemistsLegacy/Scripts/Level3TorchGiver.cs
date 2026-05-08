@@ -1,5 +1,5 @@
-using System;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class Level3TorchGiver : MonoBehaviour
 {
@@ -7,11 +7,17 @@ public class Level3TorchGiver : MonoBehaviour
     [SerializeField] private GameObject torchForIcePrefabOrObject;
     [SerializeField] private string heldTorchName = "torch_for_ice_l3";
     [SerializeField] private bool instantiateTorch = true;
-    [SerializeField] private bool giveOnlyOnce = true;
+    [SerializeField] private bool giveOnlyOnce = false;
     [SerializeField] private bool lightTorchWhenGiven = true;
 
     [Header("Interaction")]
     [SerializeField] private float interactionRange = 3.0f;
+
+    [Header("Birth Door Unlock")]
+    [SerializeField] private bool unlockBirthDoorWhenTorchGiven = true;
+    [SerializeField] private GameObject birthDoorObject;
+    [SerializeField] private string birthDoorObjectName = "Door_birth";
+    [SerializeField] private string alternateBirthDoorObjectName = "Door_1_Venge";
 
     private Camera playerCamera;
     private ItemPickup playerPickup;
@@ -21,6 +27,16 @@ public class Level3TorchGiver : MonoBehaviour
     {
         playerCamera = Camera.main;
         playerPickup = ItemPickup.instance != null ? ItemPickup.instance : FindObjectOfType<ItemPickup>();
+
+        if (torchForIcePrefabOrObject == null)
+        {
+            torchForIcePrefabOrObject = FindSceneObjectByName(heldTorchName);
+        }
+
+        if (birthDoorObject == null)
+        {
+            birthDoorObject = FindBirthDoorObject();
+        }
     }
 
     private void Update()
@@ -38,18 +54,11 @@ public class Level3TorchGiver : MonoBehaviour
             return;
         }
 
-        if (playerCamera == null)
-        {
-            playerCamera = Camera.main;
-        }
-
-        if (playerPickup == null)
-        {
-            playerPickup = ItemPickup.instance != null ? ItemPickup.instance : FindObjectOfType<ItemPickup>();
-        }
+        RefreshReferences();
 
         if (playerCamera == null || playerPickup == null || playerPickup.handPosition == null)
         {
+            Debug.LogWarning("Level3TorchGiver is missing the player camera, ItemPickup, or hand position.");
             return;
         }
 
@@ -73,12 +82,36 @@ public class Level3TorchGiver : MonoBehaviour
         GameObject torch = CreateTorchObject();
         if (torch == null)
         {
-            Debug.LogWarning("Level3TorchGiver needs torch_for_ice_l3 assigned in the Inspector.");
+            Debug.LogWarning("Level3TorchGiver could not find or create torch_for_ice_l3.");
             return;
         }
 
         GiveTorchToPlayer(torch);
+        UnlockBirthDoor();
         hasGivenTorch = true;
+    }
+
+    private void RefreshReferences()
+    {
+        if (playerCamera == null)
+        {
+            playerCamera = Camera.main;
+        }
+
+        if (playerPickup == null)
+        {
+            playerPickup = ItemPickup.instance != null ? ItemPickup.instance : FindObjectOfType<ItemPickup>();
+        }
+
+        if (torchForIcePrefabOrObject == null)
+        {
+            torchForIcePrefabOrObject = FindSceneObjectByName(heldTorchName);
+        }
+
+        if (birthDoorObject == null)
+        {
+            birthDoorObject = FindBirthDoorObject();
+        }
     }
 
     private bool MatchesThisObject(Transform hitTransform)
@@ -107,6 +140,8 @@ public class Level3TorchGiver : MonoBehaviour
         Rigidbody body = torch.GetComponent<Rigidbody>();
         if (body != null)
         {
+            body.velocity = Vector3.zero;
+            body.angularVelocity = Vector3.zero;
             body.isKinematic = true;
         }
 
@@ -116,7 +151,7 @@ public class Level3TorchGiver : MonoBehaviour
             torchCollider.enabled = false;
         }
 
-        torch.transform.SetParent(playerPickup.handPosition);
+        torch.transform.SetParent(playerPickup.handPosition, false);
         torch.transform.localPosition = Vector3.zero;
         torch.transform.localRotation = Quaternion.identity;
 
@@ -131,6 +166,82 @@ public class Level3TorchGiver : MonoBehaviour
         playerPickup.isHoldingItem = true;
 
         Debug.Log("Received " + heldTorchName);
+    }
+
+    private void UnlockBirthDoor()
+    {
+        if (!unlockBirthDoorWhenTorchGiven)
+        {
+            return;
+        }
+
+        if (birthDoorObject == null)
+        {
+            birthDoorObject = FindBirthDoorObject();
+        }
+
+        if (birthDoorObject == null)
+        {
+            Debug.LogWarning("Level3TorchGiver could not find " + birthDoorObjectName + " or " + alternateBirthDoorObjectName);
+            return;
+        }
+
+        foreach (Collider doorCollider in birthDoorObject.GetComponentsInChildren<Collider>(true))
+        {
+            doorCollider.enabled = false;
+        }
+
+        Debug.Log("Unlocked " + birthDoorObject.name + " after receiving " + heldTorchName);
+    }
+
+    private GameObject FindBirthDoorObject()
+    {
+        GameObject match = FindSceneObjectByName(birthDoorObjectName);
+        if (match != null)
+        {
+            return match;
+        }
+
+        return FindSceneObjectByName(alternateBirthDoorObjectName);
+    }
+
+    private GameObject FindSceneObjectByName(string objectName)
+    {
+        if (string.IsNullOrEmpty(objectName))
+        {
+            return null;
+        }
+
+        Scene activeScene = SceneManager.GetActiveScene();
+        foreach (GameObject rootObject in activeScene.GetRootGameObjects())
+        {
+            Transform match = FindChildByName(rootObject.transform, objectName);
+            if (match != null && match.gameObject != gameObject)
+            {
+                return match.gameObject;
+            }
+        }
+
+        return null;
+    }
+
+    private Transform FindChildByName(Transform root, string objectName)
+    {
+        if (root.name == objectName)
+        {
+            return root;
+        }
+
+        foreach (Transform child in root)
+        {
+            Transform match = FindChildByName(child, objectName);
+            if (match != null)
+            {
+                return match;
+            }
+        }
+
+        return null;
     }
 
     private void EnableFlameChildren(GameObject torch)

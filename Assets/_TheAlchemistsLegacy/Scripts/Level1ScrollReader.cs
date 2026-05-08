@@ -13,7 +13,7 @@ public class Level1ScrollReader : MonoBehaviour
     [SerializeField] private string scrollTitle = "Forge Note";
     [TextArea(6, 14)]
     [SerializeField] private string scrollBody =
-        "The forge wakes only for patient hands.\n\nFeed it wood, then metal, and wait for the seal it returns.";
+        "The forge wants two offerings.\n\nFeed it wood first, then metal. When the sword is born, sacrifice it at the old door to open the way.";
 
     private const string CanvasName = "Level1ScrollCanvas";
 
@@ -97,7 +97,7 @@ public class Level1ScrollReader : MonoBehaviour
         {
             scrollTitle = "Forge Note";
             scrollBody =
-                "When the coals remember their breath, feed them what the forest yielded and what the earth kept cold.\n\nIf the forge finds the offering worthy, it will return a mark the door cannot refuse.";
+                "When the forge wakes, feed it wood first, then metal.\n\nThe forge will return a sword. Sacrifice the sword at the old door; only then will the door let you pass.";
         }
     }
 

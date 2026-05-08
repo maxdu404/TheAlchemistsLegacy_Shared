@@ -19,6 +19,21 @@ public class Level1FurnaceController : MonoBehaviour
     private ItemPickup playerPickup;
     private bool hasWood;
     private bool hasMetal;
+    public bool HasWood
+    {
+        get { return hasWood; }
+    }
+
+    public bool HasMetal
+    {
+        get { return hasMetal; }
+    }
+
+    public bool HasProducedSeal
+    {
+        get { return hasProducedSeal; }
+    }
+
     private bool hasProducedSeal;
 
     private void Start()

@@ -334,12 +334,8 @@ public class TheAlchemistsLegacyLevelHud : MonoBehaviour
         RectTransform rect = panel.GetComponent<RectTransform>();
         Anchor(rect, new Vector2(0.0f, 0.0f), new Vector2(0.0f, 0.0f), new Vector2(26.0f, 26.0f), new Vector2(1030.0f, 74.0f), new Vector2(0.0f, 0.0f));
 
-        string controlsText = isLevel3Scene
-            ? "WASD: Move    E: Pick up / drop    Right Click: Read, open, craft, or travel    Y: Level Complete"
-            : isLevel2Scene
-                ? "WASD: Move    E: Pick up / drop    Right Click: Read or light    Y: Level Complete"
-                : "WASD: Move    E: Pick up / drop    Right Click: Read, open, or place    Y: Level Complete";
-        Text controls = CreateText(panel.transform, "ControlsText", controlsText, 20, Color.white, TextAnchor.MiddleLeft);
+        string controlsText = "WASD: Move    E: Pick up / drop    R: Recall last dropped item    Right Click: Interact    Y: Level Complete";
+        Text controls = CreateText(panel.transform, "ControlsText", controlsText, 19, Color.white, TextAnchor.MiddleLeft);
         Anchor(controls.rectTransform, new Vector2(0.0f, 0.0f), new Vector2(1.0f, 1.0f), new Vector2(18.0f, 0.0f), new Vector2(-36.0f, 0.0f), new Vector2(0.0f, 0.5f));
     }
 
@@ -428,12 +424,12 @@ public class TheAlchemistsLegacyLevelHud : MonoBehaviour
     {
         if (isLevel2Scene)
         {
-            return "Three waiting flames remember the way.\n\nFirst, wake the light nearest your first shelter.\nThen seek the flame watched by the quiet wall.\nLast, carry the memory to the black gate.";
+            return "Three waiting flames remember the way.\n\nFirst, wake the light nearest your birth house.\nThen seek the flame within the castle walls.\nLast, carry the memory to the great gate.";
         }
 
         if (isLevel3Scene)
         {
-            return "Three parts wake the master's lamp.\n\nOil waits beneath the orange campfire.\nThe base is trapped in winter's grip.\nThe wick is locked where the raised house keeps its secrets.\n\nBorrow flame from the birth house wall, then bring all three parts to the castle furnace.";
+            return "Three parts wake the master's lamp in the furnace.\n\nOil, base, and wick are needed, but fragile things are rarely left in the open.\n\nPay attention to the stable and the orange tent.\n\nWhen the parts are ready, bring them back to the castle furnace.";
         }
 
         if (isLevel4Scene)
@@ -448,17 +444,17 @@ public class TheAlchemistsLegacyLevelHud : MonoBehaviour
     {
         if (isLevel2Scene)
         {
-            return "Apprentice,\n\nMemory is a flame passed from hand to hand. A torch waits in your first shelter, but the walls will answer only in order.\n\nRead the stone, carry the flame, and let the last light open the black gate.";
+            return "Apprentice,\n\nThis trial begins inside the birth house. Take the waiting torch before you leave.\n\nThen read the scroll here, carry the flame in order, and let the last light open the black gate.";
         }
 
         if (isLevel1Scene)
         {
-            return "Apprentice,\n\nThree quiet seals lie where habit seldom lingers. One waits beneath a lid, while two keep to the room's far edges.\n\nOffer them to the basin at the workshop's heart, and the sleeping forge will remember its breath.";
+            return "Apprentice,\n\nLevel 1 asks you to wake the forge. Place the three stamps on the pedestal first.\n\nWhen the forge wakes, bring wood and metal to the forge. The furnace will create a sword.\n\nSacrifice the sword at the old door to clear the exit.";
         }
 
         if (isLevel3Scene)
         {
-            return "Apprentice,\n\nThis third trial asks for more than a key. Build the lantern, carry its light upward, and recover the exit key from the third floor.\n\nThe dark door will not answer empty hands.";
+            return "Apprentice,\n\nThis third trial begins in the birth house. One light inside does not belong with the others. Take it to open the way out, then read the master's note.\n\nGather the lamp parts, craft the lantern, and carry it upward to recover the exit key.";
         }
 
         if (isLevel4Scene)
@@ -473,19 +469,29 @@ public class TheAlchemistsLegacyLevelHud : MonoBehaviour
     {
         if (isLevel2Scene)
         {
+            bool birthDoorOpen = (level2Sequence != null && level2Sequence.BirthDoorUnlocked) || IsHoldingItem("torch_level2");
             bool pathOpen = level2Sequence != null && level2Sequence.ExitUnlocked;
             objectiveText.text = pathOpen
                 ? "Goal: the gate is open. Leave the castle."
-                : "Goal: carry the torch and wake the three flames.";
+                : birthDoorOpen
+                    ? "Goal: carry the torch and wake the three flames."
+                    : "Goal: take the torch before leaving the birth house.";
             return;
         }
 
         if (isLevel1Scene)
         {
             bool pathOpen = level1DoorSealSlot != null && level1DoorSealSlot.IsFilled;
+            bool forgeAwake = level1Pedestal != null && level1Pedestal.IsUnlocked;
+            bool finalSealReady = level1Furnace != null && level1Furnace.HasProducedSeal;
+
             objectiveText.text = pathOpen
-                ? "Goal: the way is clear. Leave the workshop."
-                : "Goal: wake the forge and find the quiet way out.";
+                ? "Goal: the way is clear. Leave Level 1."
+                : finalSealReady
+                    ? "Goal: sacrifice the sword at the old door."
+                    : forgeAwake
+                        ? "Goal: bring " + GetMissingLevel1FurnaceItems(level1Furnace) + " to the forge."
+                        : "Goal: place the three stamps to wake the forge.";
             return;
         }
 
@@ -497,7 +503,7 @@ public class TheAlchemistsLegacyLevelHud : MonoBehaviour
                 ? "Goal: the exit is open. Leave Level 3."
                 : lampCrafted
                     ? "Goal: carry the lamp upstairs and find the exit key."
-                    : "Goal: collect oil, base, and wick to craft the lamp.";
+                    : "Goal: bring " + GetMissingFurnaceIngredients(level3Furnace) + " to the furnace.";
             return;
         }
 
@@ -623,32 +629,38 @@ public class TheAlchemistsLegacyLevelHud : MonoBehaviour
         Level1ScrollReader reader = target.GetComponentInParent<Level1ScrollReader>();
         if (reader != null)
         {
-            return reader.IsReadable ? "Right Click: Read the note" : "";
+            return reader.IsReadable ? "Right Click: Read the Level 1 note" : "Wake the forge first.";
         }
 
         if (target.GetComponentInParent<KeyChestController>() != null)
         {
-            return "Right Click: Lift the lid";
+            return "Right Click: Open the chest";
         }
 
-        if (target.GetComponentInParent<Level1PedestalController>() != null)
+        Level1PedestalController pedestal = target.GetComponentInParent<Level1PedestalController>();
+        if (pedestal != null)
         {
-            if (itemPickup != null && itemPickup.isHoldingItem)
+            if (pedestal.IsUnlocked)
             {
-                return "Right Click: Offer what you carry";
+                return "The forge is awake.";
             }
 
-            return "Three quiet seals may wake the forge.";
+            return IsHoldingLevel1Stamp()
+                ? "Right Click: Place this stamp"
+                : "Place the three stamps here.";
         }
 
-        if (target.GetComponentInParent<Level1FurnaceController>() != null)
+        Level1FurnaceController furnace = target.GetComponentInParent<Level1FurnaceController>();
+        if (furnace != null)
         {
-            if (itemPickup != null && itemPickup.isHoldingItem)
+            if (furnace.HasProducedSeal)
             {
-                return "Right Click: Feed the forge";
+                return "The sword is ready.";
             }
 
-            return "The forge waits for timber and iron.";
+            return IsHoldingNeededLevel1FurnaceItem(furnace)
+                ? "Right Click: Add this furnace material"
+                : "Still needed: " + GetMissingLevel1FurnaceItems(furnace) + ".";
         }
 
         ItemSlotController slot = target.GetComponentInParent<ItemSlotController>();
@@ -656,21 +668,18 @@ public class TheAlchemistsLegacyLevelHud : MonoBehaviour
         {
             if (slot.IsFilled)
             {
-                return "The mark now rests in place.";
+                return "The sword is sacrificed.";
             }
 
-            if (itemPickup != null && itemPickup.isHoldingItem)
-            {
-                return "Right Click: Set the forged mark";
-            }
-
-            return "A finished mark belongs here.";
+            return IsHoldingLevel1Sword()
+                ? "Right Click: Sacrifice the sword"
+                : "This place needs the sword.";
         }
 
-        if (Matches(target, fireBarrierObject) || IsFireOrTrapTarget(target))
+        string level1PickupPrompt = GetLevel1PickupPrompt(target);
+        if (!string.IsNullOrEmpty(level1PickupPrompt))
         {
-            bool pathOpen = level1DoorSealSlot != null && level1DoorSealSlot.IsFilled;
-            return pathOpen ? "The flames have bowed. The way is yours." : "The flames still refuse the way.";
+            return level1PickupPrompt;
         }
 
         if (hit.collider.CompareTag("Pickup"))
@@ -678,10 +687,16 @@ public class TheAlchemistsLegacyLevelHud : MonoBehaviour
             return GetPickupPrompt(hit.collider.gameObject);
         }
 
+        if (Matches(target, fireBarrierObject) || IsFireOrTrapTarget(target))
+        {
+            bool pathOpen = level1DoorSealSlot != null && level1DoorSealSlot.IsFilled;
+            return pathOpen ? "The exit is clear." : "Sacrifice the sword before crossing the fire.";
+        }
+
         if (Matches(target, doorObject) || target.name.ToLowerInvariant().Contains("door"))
         {
             bool pathOpen = level1DoorSealSlot != null && level1DoorSealSlot.IsFilled;
-            return pathOpen ? "Walk on to finish the trial" : "The way is not yet quiet.";
+            return pathOpen ? "Walk forward to complete Level 1" : "This door still needs the sword.";
         }
 
         return "";
@@ -693,7 +708,15 @@ public class TheAlchemistsLegacyLevelHud : MonoBehaviour
 
         if (Matches(target, scrollObject))
         {
-            return "Right Click: Read the stone";
+            return "Right Click: Read the scroll";
+        }
+
+        if (IsBirthHouseDoor(target))
+        {
+            bool birthDoorOpen = (level2Sequence != null && level2Sequence.BirthDoorUnlocked) || IsHoldingItem("torch_level2");
+            return birthDoorOpen
+                ? "The birth-house door is open."
+                : "Take the torch before leaving the birth house.";
         }
 
         Level2TorchPoint torch = target.GetComponentInParent<Level2TorchPoint>();
@@ -744,21 +767,40 @@ public class TheAlchemistsLegacyLevelHud : MonoBehaviour
 
         if (target.GetComponentInParent<Level3TorchGiver>() != null)
         {
-            return "Right Click: Take the wall torch";
+            return "Right Click: Take the unusual light";
         }
 
         if (target.GetComponentInParent<Level3KeyChest>() != null)
         {
-            return itemPickup != null && itemPickup.isHoldingItem
+            return IsHoldingItem("key_l3_chest")
                 ? "Right Click: Unlock the chest"
-                : "Find the chest key first.";
+                : "This chest needs a key.";
         }
 
         if (target.GetComponentInParent<Level3FurnaceCrafting>() != null)
         {
-            return itemPickup != null && itemPickup.isHoldingItem
+            Level3FurnaceCrafting furnace = target.GetComponentInParent<Level3FurnaceCrafting>();
+            if (furnace.IsCrafted)
+            {
+                return "The lamp is ready.";
+            }
+
+            return IsHoldingNeededLampPart(furnace)
                 ? "Right Click: Add this lamp part"
-                : "Bring oil, base, and wick here.";
+                : "Still needed: " + GetMissingFurnaceIngredients(furnace) + ".";
+        }
+
+        if (target.GetComponentInParent<Level3IceMelt>() != null)
+        {
+            bool holdingTorch = IsHoldingItem("torch_for_ice_l3");
+            return holdingTorch ? "Right Click: Melt the ice" : "A fire torch could melt this ice.";
+        }
+
+        if (IsBirthHouseDoor(target))
+        {
+            return IsHoldingItem("torch_for_ice_l3")
+                ? "The birth-house door is open."
+                : "Take the unusual birth-house light before leaving.";
         }
 
         Level3DoorTeleporter teleporter = target.GetComponentInParent<Level3DoorTeleporter>();
@@ -767,10 +809,8 @@ public class TheAlchemistsLegacyLevelHud : MonoBehaviour
             string lowerName = teleporter.gameObject.name.ToLowerInvariant();
             if (lowerName.Contains("1th"))
             {
-                bool holdingLamp = itemPickup != null
-                    && itemPickup.isHoldingItem
-                    && itemPickup.currentItemName.ToLowerInvariant().Contains("lamp_l3");
-                return holdingLamp ? "Right Click: Carry the lamp upstairs" : "The upper door needs the lamp.";
+                bool holdingLamp = IsHoldingItem("lamp_l3");
+                return holdingLamp ? "Right Click: Carry the lamp upstairs" : "Craft and hold the lamp before using this door.";
             }
 
             return "Right Click: Return to the first floor";
@@ -786,13 +826,13 @@ public class TheAlchemistsLegacyLevelHud : MonoBehaviour
 
             return itemPickup != null && itemPickup.isHoldingItem
                 ? "Right Click: Place the exit key"
-                : "Find Key_l3_exit on the third floor.";
+                : "The exit slot needs the third-floor key.";
         }
 
-        if (Matches(target, fireBarrierObject) || IsFireOrTrapTarget(target))
+        string level3PickupPrompt = GetLevel3PickupPrompt(target);
+        if (!string.IsNullOrEmpty(level3PickupPrompt))
         {
-            bool exitOpen = level3ExitSlot != null && level3ExitSlot.IsFilled;
-            return exitOpen ? "The exit path is clear." : "Place the third-floor key before leaving.";
+            return level3PickupPrompt;
         }
 
         if (hit.collider.CompareTag("Pickup"))
@@ -800,10 +840,16 @@ public class TheAlchemistsLegacyLevelHud : MonoBehaviour
             return GetPickupPrompt(hit.collider.gameObject);
         }
 
+        if (Matches(target, fireBarrierObject) || IsFireOrTrapTarget(target))
+        {
+            bool exitOpen = level3ExitSlot != null && level3ExitSlot.IsFilled;
+            return exitOpen ? "The exit path is clear." : "Place the exit key in the slot before leaving.";
+        }
+
         if (Matches(target, doorObject) || target.name.ToLowerInvariant().Contains("door"))
         {
             bool exitOpen = level3ExitSlot != null && level3ExitSlot.IsFilled;
-            return exitOpen ? "Walk forward to complete Level 3" : "The exit key has not been set.";
+            return exitOpen ? "Walk forward to complete Level 3" : "You cannot leave until the exit key is placed.";
         }
 
         return "";
@@ -819,13 +865,65 @@ public class TheAlchemistsLegacyLevelHud : MonoBehaviour
         return "";
     }
 
+    private string GetLevel1PickupPrompt(Transform target)
+    {
+        while (target != null)
+        {
+            string lowerName = target.name.ToLowerInvariant();
+
+            if (lowerName.Contains("woodlevel1"))
+            {
+                return "E: Take wood";
+            }
+
+            if (lowerName.Contains("metallevel1"))
+            {
+                return "E: Take metal";
+            }
+
+            if ((lowerName.Contains("finalseal") || lowerName.Contains("sword")) && !lowerName.Contains("placed"))
+            {
+                return "E: Take sword";
+            }
+
+            if (lowerName.Contains("stamp1"))
+            {
+                return "E: Take stamp";
+            }
+
+            if (lowerName.Contains("stamp2"))
+            {
+                return "E: Take stamp";
+            }
+
+            if (lowerName.Contains("stamp3"))
+            {
+                return "E: Take stamp";
+            }
+
+            target = target.parent;
+        }
+
+        return "";
+    }
+
     private string GetPickupPrompt(GameObject item)
     {
         string lowerName = item.name.ToLowerInvariant();
 
+        if (lowerName.Contains("woodlevel1"))
+        {
+            return "E: Take wood";
+        }
+
+        if (lowerName.Contains("metallevel1"))
+        {
+            return "E: Take metal";
+        }
+
         if (lowerName.Contains("fireball_l3"))
         {
-            return "E: Take the lamp oil";
+            return "E: Take the fragile lantern oil";
         }
 
         if (lowerName.Contains("lantern_base_l3"))
@@ -835,7 +933,7 @@ public class TheAlchemistsLegacyLevelHud : MonoBehaviour
 
         if (lowerName.Contains("l3_wick"))
         {
-            return "E: Take the wick";
+            return "E: Take the lantern wick";
         }
 
         if (lowerName.Contains("key_l3_chest"))
@@ -853,14 +951,34 @@ public class TheAlchemistsLegacyLevelHud : MonoBehaviour
             return "E: Take the lantern";
         }
 
-        if (lowerName.Contains("torch_level2"))
+        if (lowerName.Contains("torch_for_ice_l3"))
         {
-            return "E: Take the torch";
+            return "E: Take the fire torch";
         }
 
-        if (lowerName.Contains("finalseal"))
+        if (lowerName.Contains("torch_level2"))
         {
-            return "E: Take the forged seal";
+            return "E: Take the birth-house torch";
+        }
+
+        if (lowerName.Contains("finalseal") || lowerName.Contains("sword"))
+        {
+            return "E: Take sword";
+        }
+
+        if (lowerName.Contains("stamp1"))
+        {
+            return "E: Take stamp";
+        }
+
+        if (lowerName.Contains("stamp2"))
+        {
+            return "E: Take stamp";
+        }
+
+        if (lowerName.Contains("stamp3"))
+        {
+            return "E: Take stamp";
         }
 
         if (lowerName.Contains("stamp"))
@@ -870,15 +988,62 @@ public class TheAlchemistsLegacyLevelHud : MonoBehaviour
 
         if (lowerName.Contains("wood") || lowerName.Contains("firewood") || lowerName.Contains("timber"))
         {
-            return "E: Gather the timber";
+            return "E: Take wood";
         }
 
         if (lowerName.Contains("metal") || lowerName.Contains("iron") || lowerName.Contains("sawblade"))
         {
-            return "E: Gather the iron";
+            return "E: Take metal";
         }
 
         return "E: Take it";
+    }
+
+    private string GetLevel3PickupPrompt(Transform target)
+    {
+        while (target != null)
+        {
+            string lowerName = target.name.ToLowerInvariant();
+
+            if (lowerName.Contains("fireball_l3"))
+            {
+                return "E: Take the fragile lantern oil";
+            }
+
+            if (lowerName.Contains("lantern_base_l3"))
+            {
+                return "E: Take the lantern base";
+            }
+
+            if (lowerName.Contains("l3_wick"))
+            {
+                return "E: Take the lantern wick";
+            }
+
+            if (lowerName.Contains("key_l3_chest"))
+            {
+                return "E: Take the chest key";
+            }
+
+            if (lowerName.Contains("key_l3_exit"))
+            {
+                return "E: Take the exit key";
+            }
+
+            if (lowerName.Contains("lamp_l3"))
+            {
+                return "E: Take the lantern";
+            }
+
+            if (lowerName.Contains("torch_for_ice_l3"))
+            {
+                return "E: Take the fire torch";
+            }
+
+            target = target.parent;
+        }
+
+        return "";
     }
 
     private string GetFriendlyItemName(GameObject item)
@@ -892,7 +1057,7 @@ public class TheAlchemistsLegacyLevelHud : MonoBehaviour
 
         if (lowerName.Contains("fireball_l3"))
         {
-            return "Lamp Oil";
+            return "Fragile Lantern Oil";
         }
 
         if (lowerName.Contains("lantern_base_l3"))
@@ -930,9 +1095,24 @@ public class TheAlchemistsLegacyLevelHud : MonoBehaviour
             return "Torch";
         }
 
-        if (lowerName.Contains("finalseal"))
+        if (lowerName.Contains("finalseal") || lowerName.Contains("sword"))
         {
-            return "Forged Seal";
+            return "sword";
+        }
+
+        if (lowerName.Contains("stamp1"))
+        {
+            return "stamp";
+        }
+
+        if (lowerName.Contains("stamp2"))
+        {
+            return "stamp";
+        }
+
+        if (lowerName.Contains("stamp3"))
+        {
+            return "stamp";
         }
 
         if (lowerName.Contains("stamp"))
@@ -942,12 +1122,12 @@ public class TheAlchemistsLegacyLevelHud : MonoBehaviour
 
         if (lowerName.Contains("wood") || lowerName.Contains("firewood") || lowerName.Contains("timber"))
         {
-            return "Dry Timber";
+            return "wood";
         }
 
         if (lowerName.Contains("metal") || lowerName.Contains("iron") || lowerName.Contains("sawblade"))
         {
-            return "Cold Iron";
+            return "metal";
         }
 
         return item.name.Replace("(Clone)", "").Trim();
@@ -974,6 +1154,128 @@ public class TheAlchemistsLegacyLevelHud : MonoBehaviour
     {
         return targetObject != null
             && (transformToCheck == targetObject.transform || transformToCheck.IsChildOf(targetObject.transform));
+    }
+
+    private bool IsHoldingItem(string itemNamePart)
+    {
+        if (itemPickup == null || !itemPickup.isHoldingItem || string.IsNullOrEmpty(itemNamePart))
+        {
+            return false;
+        }
+
+        string lowerItemNamePart = itemNamePart.ToLowerInvariant();
+        bool currentNameMatches = !string.IsNullOrEmpty(itemPickup.currentItemName)
+            && itemPickup.currentItemName.ToLowerInvariant().Contains(lowerItemNamePart);
+        bool currentObjectMatches = itemPickup.currentItem != null
+            && itemPickup.currentItem.name.ToLowerInvariant().Contains(lowerItemNamePart);
+
+        return currentNameMatches || currentObjectMatches;
+    }
+
+    private bool IsHoldingLevel1Stamp()
+    {
+        return IsHoldingItem("Stamp1")
+            || IsHoldingItem("Stamp2")
+            || IsHoldingItem("Stamp3");
+    }
+
+    private bool IsHoldingLevel1Sword()
+    {
+        return IsHoldingItem("sword") || IsHoldingItem("FinalSeal");
+    }
+
+    private bool IsHoldingNeededLevel1FurnaceItem(Level1FurnaceController furnace)
+    {
+        if (furnace == null || furnace.HasProducedSeal)
+        {
+            return false;
+        }
+
+        return (!furnace.HasWood && IsHoldingItem("wood"))
+            || (!furnace.HasMetal && IsHoldingItem("metal"));
+    }
+
+    private string GetMissingLevel1FurnaceItems(Level1FurnaceController furnace)
+    {
+        if (furnace == null)
+        {
+            return "wood, metal";
+        }
+
+        if (furnace.HasProducedSeal)
+        {
+            return "nothing";
+        }
+
+        string missing = "";
+        AddMissingIngredient(ref missing, !furnace.HasWood, "wood");
+        AddMissingIngredient(ref missing, !furnace.HasMetal, "metal");
+
+        return string.IsNullOrEmpty(missing) ? "nothing" : missing;
+    }
+
+    private bool IsHoldingNeededLampPart(Level3FurnaceCrafting furnace)
+    {
+        if (furnace == null || furnace.IsCrafted)
+        {
+            return false;
+        }
+
+        return (!furnace.HasOil && IsHoldingItem("fireball_l3"))
+            || (!furnace.HasBase && IsHoldingItem("lantern_base_l3"))
+            || (!furnace.HasWick && IsHoldingItem("l3_wick"));
+    }
+
+    private string GetMissingFurnaceIngredients(Level3FurnaceCrafting furnace)
+    {
+        if (furnace == null)
+        {
+            return "oil, base, and wick";
+        }
+
+        if (furnace.IsCrafted)
+        {
+            return "nothing";
+        }
+
+        string missing = "";
+        AddMissingIngredient(ref missing, !furnace.HasOil, "oil");
+        AddMissingIngredient(ref missing, !furnace.HasBase, "base");
+        AddMissingIngredient(ref missing, !furnace.HasWick, "wick");
+
+        return string.IsNullOrEmpty(missing) ? "nothing" : missing;
+    }
+
+    private void AddMissingIngredient(ref string missing, bool shouldAdd, string ingredientName)
+    {
+        if (!shouldAdd)
+        {
+            return;
+        }
+
+        if (string.IsNullOrEmpty(missing))
+        {
+            missing = ingredientName;
+            return;
+        }
+
+        missing += ", " + ingredientName;
+    }
+
+    private bool IsBirthHouseDoor(Transform target)
+    {
+        while (target != null)
+        {
+            string lowerName = target.name.ToLowerInvariant();
+            if (lowerName.Contains("door_birth") || lowerName.Contains("door_1_venge"))
+            {
+                return true;
+            }
+
+            target = target.parent;
+        }
+
+        return false;
     }
 
     private bool IsFireOrTrapTarget(Transform target)
