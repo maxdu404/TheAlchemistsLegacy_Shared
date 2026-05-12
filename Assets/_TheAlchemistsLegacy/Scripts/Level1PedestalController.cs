@@ -8,6 +8,7 @@ public class Level1PedestalController : MonoBehaviour
     [SerializeField] private string[] requiredItems = { "Stamp1", "Stamp2", "Stamp3" };
     [SerializeField] private GameObject[] placedVisuals;
     [SerializeField] private float interactionRange = 3.0f;
+    [SerializeField] private float interactionAimRadius = 0.5f;
 
     [Header("Unlock Targets")]
     [SerializeField] private GameObject cageLevel1;
@@ -92,8 +93,7 @@ public class Level1PedestalController : MonoBehaviour
             return;
         }
 
-        Ray ray = playerCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0.0f));
-        if (!Physics.Raycast(ray, out RaycastHit hit, interactionRange))
+        if (!AimInteraction.Cast(playerCamera, interactionRange, interactionAimRadius, out RaycastHit hit))
         {
             return;
         }

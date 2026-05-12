@@ -12,7 +12,7 @@ public class Level3TorchGiver : MonoBehaviour
 
     [Header("Interaction")]
     [SerializeField] private float interactionRange = 3.0f;
-    [SerializeField] private float interactionAimRadius = 0.22f;
+    [SerializeField] private float interactionAimRadius = 0.5f;
 
     [Header("Birth Door Unlock")]
     [SerializeField] private bool unlockBirthDoorWhenTorchGiven = true;
@@ -220,6 +220,7 @@ public class Level3TorchGiver : MonoBehaviour
         torch.transform.SetParent(playerPickup.handPosition, false);
         torch.transform.localPosition = Vector3.zero;
         torch.transform.localRotation = Quaternion.identity;
+
 
         if (lightTorchWhenGiven)
         {

@@ -10,6 +10,7 @@ public class Level2TorchSequenceController : MonoBehaviour
     [SerializeField] private bool autoFindTorches = true;
     [SerializeField] private string lightingToolName = "Torch_Level2";
     [SerializeField] private float interactionRange = 4f;
+    [SerializeField] private float interactionAimRadius = 0.5f;
 
     [Header("Exit Unlock")]
     [SerializeField] private GameObject[] barriersToDisable;
@@ -99,8 +100,7 @@ public class Level2TorchSequenceController : MonoBehaviour
             return;
         }
 
-        Ray ray = playerCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0f));
-        if (!Physics.Raycast(ray, out RaycastHit hit, interactionRange))
+        if (!AimInteraction.Cast(playerCamera, interactionRange, interactionAimRadius, out RaycastHit hit))
         {
             return;
         }

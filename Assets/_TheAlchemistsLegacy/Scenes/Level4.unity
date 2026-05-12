@@ -8063,7 +8063,7 @@ MonoBehaviour:
   landingPosition: {x: -41.904, y: 1.297, z: 75.152}
   maxSnapDownDistance: 1.5
   maxSnapUpDistance: 0.5
-  faceRight: 1
+  faceLeft: 1
 --- !u!54 &687654803
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -11487,7 +11487,7 @@ MonoBehaviour:
   landingPosition: {x: -41.904, y: 1.297, z: 75.152}
   maxSnapDownDistance: 1.5
   maxSnapUpDistance: 0.5
-  faceRight: 1
+  faceLeft: 1
 --- !u!114 &978934669
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -16869,21 +16869,8 @@ MonoBehaviour:
   hideLanternBaseUntilMelted: 1
   extraObjectsToHide: []
   extraObjectsToReveal: []
-  interactionRange: 3
-  interactionAimRadius: 0.5
---- !u!65 &1464721684
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1464721679}
-  m_Material: {fileID: 0}
-  m_IsTrigger: 0
-  m_Enabled: 1
-  serializedVersion: 2
-  m_Size: {x: 0.02, y: 0.01, z: 0.02}
-  m_Center: {x: 0.000006006332, y: 0.0000027981594, z: 0.000006592368}
+  interactionRange: 4
+  interactionAimRadius: 2
 --- !u!54 &1464721685
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -16900,6 +16887,51 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
+--- !u!65 &1464721689
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1464721679}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Size: {x: 0.02, y: 0.02, z: 0.02}
+  m_Center: {x: 0.0000060063317, y: 0.0000028577642, z: 0.000006592368}
+--- !u!114 &1464721690
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1464721679}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f67d1c4e6a4de0841937ebc175a670e8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  normalColor: {r: 0, g: 1, b: 0, a: 1}
+  hoverColor: {r: 1, g: 0, b: 0, a: 1}
+--- !u!114 &1464721691
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1464721679}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5fea29bb7c508c244a1f805a5fd3fc4d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  outlineMode: 0
+  outlineColor: {r: 1, g: 1, b: 1, a: 1}
+  outlineWidth: 2
+  precomputeOutline: 0
+  bakeKeys: []
+  bakeValues: []
 --- !u!4 &1465553091 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 400000, guid: 0a3041dcda597954782f48ac8a97bf33, type: 3}
@@ -17735,7 +17767,7 @@ MonoBehaviour:
   sceneToLoad: TrailComplete
   loadOnPlayerTrigger: 1
   loadWhenPlayerIsNear: 1
-  exitDistance: 3
+  exitDistance: 5
   playerTag: Player
 --- !u!1 &1516698737 stripped
 GameObject:
@@ -18418,7 +18450,7 @@ MonoBehaviour:
   torchForIcePrefabOrObject: {fileID: 1377250528}
   heldTorchName: torch_for_ice_l2
   instantiateTorch: 1
-  giveOnlyOnce: 0
+  giveOnlyOnce: 1
   lightTorchWhenGiven: 1
   interactionRange: 3
   interactionAimRadius: 0.5
@@ -24748,6 +24780,7 @@ MonoBehaviour:
   requiredHeldItemName: lamp_l3
   keepUnlockedAfterSuccessfulUse: 1
   interactionRange: 3
+  interactionAimRadius: 0.5
   teleportWhenPlayerIsNear: 0
   proximityRange: 2
   teleportCooldown: 1

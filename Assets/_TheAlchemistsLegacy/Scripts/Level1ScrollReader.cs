@@ -7,6 +7,7 @@ public class Level1ScrollReader : MonoBehaviour
     [Header("Behavior")]
     [SerializeField] private bool readableAtStart = true;
     [SerializeField] private float interactionRange = 3.0f;
+    [SerializeField] private float interactionAimRadius = 0.5f;
 
     [Header("Content")]
     [TextArea(4, 10)]
@@ -113,8 +114,7 @@ public class Level1ScrollReader : MonoBehaviour
             return;
         }
 
-        Ray ray = playerCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0.0f));
-        if (!Physics.Raycast(ray, out RaycastHit hit, interactionRange))
+        if (!AimInteraction.Cast(playerCamera, interactionRange, interactionAimRadius, out RaycastHit hit))
         {
             return;
         }

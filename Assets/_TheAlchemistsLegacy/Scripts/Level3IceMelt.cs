@@ -20,7 +20,7 @@ public class Level3IceMelt : MonoBehaviour
 
     [Header("Interaction")]
     [SerializeField] private float interactionRange = 3.0f;
-    [SerializeField] private float interactionAimRadius = 0.22f;
+    [SerializeField] private float interactionAimRadius = 0.5f;
 
     public bool IsMelted
     {

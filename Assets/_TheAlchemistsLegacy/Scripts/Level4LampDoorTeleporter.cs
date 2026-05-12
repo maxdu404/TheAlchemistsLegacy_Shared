@@ -20,7 +20,7 @@ public class Level4LampDoorTeleporter : MonoBehaviour
 
     [Header("Interaction")]
     [SerializeField] private float interactionRange = 3.0f;
-    [SerializeField] private float interactionAimRadius = 0.22f;
+    [SerializeField] private float interactionAimRadius = 0.5f;
     [SerializeField] private bool teleportWhenPlayerIsNear = true;
     [SerializeField] private float proximityRange = 2.0f;
     [SerializeField] private float teleportCooldown = 1.0f;

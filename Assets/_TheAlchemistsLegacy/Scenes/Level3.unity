@@ -1070,7 +1070,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 400250, guid: 97318fbbd96e1824c9f8390c74e20ed3, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 61.115
+      value: 62.519
       objectReference: {fileID: 0}
     - target: {fileID: 400250, guid: 97318fbbd96e1824c9f8390c74e20ed3, type: 3}
       propertyPath: m_LocalRotation.w
@@ -1200,6 +1200,7 @@ MonoBehaviour:
   - Dungeon_Floor_Trap_Star
   - Traps_l3_exit
   interactionRange: 3
+  interactionAimRadius: 0.5
 --- !u!4 &74682167 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 400250, guid: 97318fbbd96e1824c9f8390c74e20ed3, type: 3}
@@ -2036,15 +2037,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -4216859302048453862, guid: 0669f3d8f4b119f418a4bbe061cc198f, type: 3}
       propertyPath: m_LocalScale.x
-      value: 2
+      value: 3
       objectReference: {fileID: 0}
     - target: {fileID: -4216859302048453862, guid: 0669f3d8f4b119f418a4bbe061cc198f, type: 3}
       propertyPath: m_LocalScale.y
-      value: 2
+      value: 3
       objectReference: {fileID: 0}
     - target: {fileID: -4216859302048453862, guid: 0669f3d8f4b119f418a4bbe061cc198f, type: 3}
       propertyPath: m_LocalScale.z
-      value: 2
+      value: 3
       objectReference: {fileID: 0}
     - target: {fileID: -4216859302048453862, guid: 0669f3d8f4b119f418a4bbe061cc198f, type: 3}
       propertyPath: m_LocalPosition.x
@@ -2314,6 +2315,7 @@ MonoBehaviour:
   lampSpawnPoint: {fileID: 0}
   hideLampUntilCrafted: 1
   interactionRange: 3
+  interactionAimRadius: 0.5
 --- !u!1001 &230611341
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -4186,6 +4188,33 @@ MonoBehaviour:
   precomputeOutline: 0
   bakeKeys: []
   bakeValues: []
+--- !u!65 &369931501
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 369931488}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Size: {x: 1, y: 1, z: 1}
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!136 &369931502
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 369931488}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  m_Radius: 0.5
+  m_Height: 1
+  m_Direction: 1
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1001 &374612800
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -6280,13 +6309,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 38c6cb433a4054816ad5a81b29de3eca, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  requiresKey: 1
   keyItemName: Key_l3_chest
   autoConfigureLevel4SaltChest: 1
   consumeKeyOnOpen: 1
   lid: {fileID: 539197839}
   openAngle: -90
   openSpeed: 2
-  contentsToReveal: []
+  contentsToReveal:
+  - {fileID: 369931488}
   hideContentsUntilOpen: 1
   interactionRange: 3
   interactionAimRadius: 0.22
@@ -7187,6 +7218,24 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 100000, guid: 0a3041dcda597954782f48ac8a97bf33, type: 3}
   m_PrefabInstance: {fileID: 374612800}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &656138031 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 3549978659323812103, guid: 3b6d6608b9b0afd47be55b20a43b78b2, type: 3}
+  m_PrefabInstance: {fileID: 1735952113}
+  m_PrefabAsset: {fileID: 0}
+--- !u!65 &656138036
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 656138031}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Size: {x: 1.0000001, y: 1.0000001, z: 1.0000001}
+  m_Center: {x: 0, y: 0, z: -0.000030517578}
 --- !u!1001 &656361080
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -8679,6 +8728,7 @@ MonoBehaviour:
   giveOnlyOnce: 1
   lightTorchWhenGiven: 1
   interactionRange: 3
+  interactionAimRadius: 0.5
   unlockBirthDoorWhenTorchGiven: 1
   birthDoorObject: {fileID: 0}
   birthDoorObjectName: Door_birth
@@ -11104,7 +11154,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 400000, guid: 9fad38ab673e5aa47a08b7b438256715, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -42.829823
+      value: -41.58
       objectReference: {fileID: 0}
     - target: {fileID: 400000, guid: 9fad38ab673e5aa47a08b7b438256715, type: 3}
       propertyPath: m_LocalPosition.y
@@ -11142,6 +11192,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 2300000, guid: 9fad38ab673e5aa47a08b7b438256715, type: 3}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: 2100000, guid: 05a6b76d444e9f747b83e88e455365d2, type: 2}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 9fad38ab673e5aa47a08b7b438256715, type: 3}
 --- !u!1001 &1057506861
@@ -13744,19 +13798,6 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 100000, guid: 9fad38ab673e5aa47a08b7b438256715, type: 3}
   m_PrefabInstance: {fileID: 1054531991}
   m_PrefabAsset: {fileID: 0}
---- !u!65 &1343503286
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1343503282}
-  m_Material: {fileID: 0}
-  m_IsTrigger: 0
-  m_Enabled: 1
-  serializedVersion: 2
-  m_Size: {x: 0.5, y: 0.5, z: 1}
-  m_Center: {x: -0.0056931973, y: 0.039108004, z: 0}
 --- !u!114 &1343503290
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -13789,6 +13830,19 @@ MonoBehaviour:
   precomputeOutline: 0
   bakeKeys: []
   bakeValues: []
+--- !u!65 &1343503295
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1343503282}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Size: {x: 0.3, y: 0.3, z: 0.7873475}
+  m_Center: {x: -0.0056931973, y: 0.039108004, z: 0}
 --- !u!1 &1343627789
 GameObject:
   m_ObjectHideFlags: 0
@@ -15303,6 +15357,7 @@ MonoBehaviour:
   giveOnlyOnce: 1
   lightTorchWhenGiven: 1
   interactionRange: 3
+  interactionAimRadius: 0.5
   unlockBirthDoorWhenTorchGiven: 1
   birthDoorObject: {fileID: 0}
   birthDoorObjectName: Door_birth
@@ -15837,7 +15892,7 @@ MonoBehaviour:
   sceneToLoad: TrailComplete
   loadOnPlayerTrigger: 1
   loadWhenPlayerIsNear: 1
-  exitDistance: 4
+  exitDistance: 5
   playerTag: Player
 --- !u!1001 &1532262819
 PrefabInstance:
@@ -17047,6 +17102,18 @@ PrefabInstance:
       value: 8
       objectReference: {fileID: 0}
     - target: {fileID: 6004128062499415390, guid: 5aabe6eddaf13f04c882bcfec90252d4, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 6004128062499415390, guid: 5aabe6eddaf13f04c882bcfec90252d4, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 6004128062499415390, guid: 5aabe6eddaf13f04c882bcfec90252d4, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 6004128062499415390, guid: 5aabe6eddaf13f04c882bcfec90252d4, type: 3}
       propertyPath: m_LocalPosition.x
       value: -28.581
       objectReference: {fileID: 0}
@@ -17092,7 +17159,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7280538777404938061, guid: 5aabe6eddaf13f04c882bcfec90252d4, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 5aabe6eddaf13f04c882bcfec90252d4, type: 3}
@@ -18253,12 +18320,24 @@ PrefabInstance:
       value: 9
       objectReference: {fileID: 0}
     - target: {fileID: 3549978659134890748, guid: 3b6d6608b9b0afd47be55b20a43b78b2, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 3549978659134890748, guid: 3b6d6608b9b0afd47be55b20a43b78b2, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 3549978659134890748, guid: 3b6d6608b9b0afd47be55b20a43b78b2, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 3549978659134890748, guid: 3b6d6608b9b0afd47be55b20a43b78b2, type: 3}
       propertyPath: m_LocalPosition.x
       value: -56.137
       objectReference: {fileID: 0}
     - target: {fileID: 3549978659134890748, guid: 3b6d6608b9b0afd47be55b20a43b78b2, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.3555
+      value: 0.452
       objectReference: {fileID: 0}
     - target: {fileID: 3549978659134890748, guid: 3b6d6608b9b0afd47be55b20a43b78b2, type: 3}
       propertyPath: m_LocalPosition.z
@@ -18293,10 +18372,15 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3549978659134890749, guid: 3b6d6608b9b0afd47be55b20a43b78b2, type: 3}
-      propertyPath: m_CollisionDetection
-      value: 3
+      propertyPath: m_Constraints
+      value: 126
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    - target: {fileID: 3549978659134890749, guid: 3b6d6608b9b0afd47be55b20a43b78b2, type: 3}
+      propertyPath: m_CollisionDetection
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents:
+    - {fileID: 3549978659134890750, guid: 3b6d6608b9b0afd47be55b20a43b78b2, type: 3}
   m_SourcePrefab: {fileID: 100100000, guid: 3b6d6608b9b0afd47be55b20a43b78b2, type: 3}
 --- !u!1001 &1742422645
 PrefabInstance:
@@ -19866,6 +19950,7 @@ MonoBehaviour:
   requiredHeldItemName: lamp_l3
   keepUnlockedAfterSuccessfulUse: 1
   interactionRange: 3
+  interactionAimRadius: 0.5
   teleportWhenPlayerIsNear: 1
   proximityRange: 2
   teleportCooldown: 1
@@ -19894,6 +19979,10 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 2755634150965147738, guid: c533c10f37d12c941bf5dfea26e26cac, type: 3}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: 2100000, guid: 8cd547d3cfa6ac348a9fa5a045f58752, type: 2}
     - target: {fileID: 3399158795423394286, guid: c533c10f37d12c941bf5dfea26e26cac, type: 3}
       propertyPath: m_RootOrder
       value: 11
@@ -19908,7 +19997,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3399158795423394286, guid: c533c10f37d12c941bf5dfea26e26cac, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -42.309
+      value: -41.515
       objectReference: {fileID: 0}
     - target: {fileID: 3399158795423394286, guid: c533c10f37d12c941bf5dfea26e26cac, type: 3}
       propertyPath: m_LocalPosition.y
@@ -20509,6 +20598,7 @@ MonoBehaviour:
   extraObjectsToHide: []
   extraObjectsToReveal: []
   interactionRange: 3
+  interactionAimRadius: 0.5
 --- !u!114 &1944383680
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -20531,6 +20621,7 @@ MonoBehaviour:
   requiredHeldItemName: lamp_l3
   keepUnlockedAfterSuccessfulUse: 1
   interactionRange: 3
+  interactionAimRadius: 0.5
   teleportWhenPlayerIsNear: 0
   proximityRange: 2
   teleportCooldown: 1
@@ -20784,15 +20875,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 400000, guid: 6423b6a6b80004e498392a10b68fb590, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -50.11642
+      value: -49.913
       objectReference: {fileID: 0}
     - target: {fileID: 400000, guid: 6423b6a6b80004e498392a10b68fb590, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.13355131
+      value: 1.504
       objectReference: {fileID: 0}
     - target: {fileID: 400000, guid: 6423b6a6b80004e498392a10b68fb590, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 93.617424
+      value: 91.795
       objectReference: {fileID: 0}
     - target: {fileID: 400000, guid: 6423b6a6b80004e498392a10b68fb590, type: 3}
       propertyPath: m_LocalRotation.w
@@ -22557,6 +22648,7 @@ MonoBehaviour:
   requiredHeldItemName: lamp_l3
   keepUnlockedAfterSuccessfulUse: 1
   interactionRange: 3
+  interactionAimRadius: 0.5
   teleportWhenPlayerIsNear: 0
   proximityRange: 2
   teleportCooldown: 1

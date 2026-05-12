@@ -18,6 +18,7 @@ public class Level3DoorTeleporter : MonoBehaviour
 
     [Header("Interaction")]
     [SerializeField] private float interactionRange = 3.0f;
+    [SerializeField] private float interactionAimRadius = 0.5f;
     [SerializeField] private bool teleportWhenPlayerIsNear = false;
     [SerializeField] private float proximityRange = 2.0f;
     [SerializeField] private float teleportCooldown = 1.0f;
@@ -121,8 +122,7 @@ public class Level3DoorTeleporter : MonoBehaviour
             return;
         }
 
-        Ray ray = playerCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0.0f));
-        if (!Physics.Raycast(ray, out RaycastHit hit, interactionRange))
+        if (!AimInteraction.Cast(playerCamera, interactionRange, interactionAimRadius, out RaycastHit hit))
         {
             return;
         }

@@ -102,7 +102,9 @@ public class TheAlchemistsLegacyLevelHud : MonoBehaviour
             return;
         }
 
-        if (!isLevel1Scene && Input.GetMouseButtonDown(1) && (IsLookingAt(scrollObject) || (isLevel4Scene && IsLookingAtLevel4Clue())))
+        if (!isLevel1Scene
+            && Input.GetMouseButtonDown(1)
+            && (IsLookingAt(scrollObject) || (isLevel2Scene && IsLookingAtLevel2Clue()) || (isLevel4Scene && IsLookingAtLevel4Clue())))
         {
             SetScrollOpen(true);
             return;
@@ -173,6 +175,11 @@ public class TheAlchemistsLegacyLevelHud : MonoBehaviour
             if (scrollObject == null)
             {
                 scrollObject = GameObject.Find("StoneTablet_Level2_Scroll");
+            }
+
+            if (scrollObject == null)
+            {
+                scrollObject = GameObject.Find("StoneTablet_Level2");
             }
 
             if (doorObject == null)
@@ -759,10 +766,11 @@ public class TheAlchemistsLegacyLevelHud : MonoBehaviour
     private string GetLevel2LookPrompt(RaycastHit hit)
     {
         Transform target = hit.collider.transform;
+        string lowerTargetName = GetLowerHierarchyName(target);
 
-        if (Matches(target, scrollObject))
+        if (Matches(target, scrollObject) || IsLevel2ClueTarget(lowerTargetName))
         {
-            return "Right Click: Read the scroll";
+            return "Right Click: Read the stone tablet";
         }
 
         if (IsBirthHouseDoor(target))
@@ -1684,6 +1692,28 @@ public class TheAlchemistsLegacyLevelHud : MonoBehaviour
     private bool IsLookingAt(GameObject targetObject)
     {
         return targetObject != null && TryLook(out RaycastHit hit) && Matches(hit.collider.transform, targetObject);
+    }
+
+    private bool IsLookingAtLevel2Clue()
+    {
+        if (!TryLook(out RaycastHit hit))
+        {
+            return false;
+        }
+
+        return IsLevel2ClueTarget(GetLowerHierarchyName(hit.collider.transform));
+    }
+
+    private bool IsLevel2ClueTarget(string lowerHierarchyName)
+    {
+        if (string.IsNullOrEmpty(lowerHierarchyName))
+        {
+            return false;
+        }
+
+        return lowerHierarchyName.Contains("stonetablet_level2")
+            || lowerHierarchyName.Contains("stone tablet") && lowerHierarchyName.Contains("level2")
+            || lowerHierarchyName.Contains("stone") && lowerHierarchyName.Contains("tablet") && lowerHierarchyName.Contains("level2");
     }
 
     private bool IsLookingAtLevel4Clue()

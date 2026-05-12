@@ -6,7 +6,7 @@ public class Level4PickupTeleporter : MonoBehaviour
     [SerializeField] private Vector3 landingPosition = new Vector3(-41.904f, 1.297f, 75.152f);
     [SerializeField] private float maxSnapDownDistance = 1.5f;
     [SerializeField] private float maxSnapUpDistance = 0.5f;
-    [SerializeField] private bool faceRight = true;
+    [SerializeField] private bool faceLeft = true;
 
     private bool hasTeleported;
     private ItemPickup playerPickup;
@@ -71,9 +71,9 @@ public class Level4PickupTeleporter : MonoBehaviour
 
         player.transform.position = destination;
 
-        if (faceRight)
+        if (faceLeft)
         {
-            ForcePlayerLookDirection(player, Vector3.right);
+            ForcePlayerLookDirection(player, Vector3.left);
         }
 
         if (hadController)

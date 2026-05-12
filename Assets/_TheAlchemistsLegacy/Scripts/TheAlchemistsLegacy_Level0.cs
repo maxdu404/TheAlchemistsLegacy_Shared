@@ -16,6 +16,7 @@ public class TheAlchemistsLegacy_Level0 : MonoBehaviour
     [SerializeField] private Camera playerCamera;
     [SerializeField] private ItemPickup playerPickup;
     [SerializeField] private float interactionRange = 3.0f;
+    [SerializeField] private float interactionAimRadius = 0.5f;
 
     [Header("Objects")]
     [SerializeField] private bool useExternalBucketScripts = false;
@@ -264,8 +265,7 @@ public class TheAlchemistsLegacy_Level0 : MonoBehaviour
             return false;
         }
 
-        Ray ray = playerCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0.0f));
-        return Physics.Raycast(ray, out hit, interactionRange);
+        return AimInteraction.Cast(playerCamera, interactionRange, interactionAimRadius, out hit);
     }
 
     private void OpenScroll()

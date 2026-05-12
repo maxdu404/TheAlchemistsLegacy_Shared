@@ -7,6 +7,7 @@ public class Level1FurnaceController : MonoBehaviour
     [SerializeField] private string woodItemName = "WoodLevel1";
     [SerializeField] private string metalItemName = "MetalLevel1";
     [SerializeField] private float interactionRange = 3.0f;
+    [SerializeField] private float interactionAimRadius = 0.5f;
 
     [Header("Visuals")]
     [SerializeField] private GameObject woodPlacedVisual;
@@ -92,8 +93,7 @@ public class Level1FurnaceController : MonoBehaviour
             return;
         }
 
-        Ray ray = playerCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0.0f));
-        if (!Physics.Raycast(ray, out RaycastHit hit, interactionRange))
+        if (!AimInteraction.Cast(playerCamera, interactionRange, interactionAimRadius, out RaycastHit hit))
         {
             return;
         }
