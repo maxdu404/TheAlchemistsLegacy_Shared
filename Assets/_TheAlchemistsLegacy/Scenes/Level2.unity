@@ -15122,7 +15122,7 @@ MonoBehaviour:
   - {fileID: 1988609000}
   autoFindTorches: 1
   lightingToolName: Torch_Level2
-  interactionRange: 4
+  interactionRange: 6
   interactionAimRadius: 0.5
   barriersToDisable:
   - {fileID: 1310408495}
@@ -19676,7 +19676,7 @@ MonoBehaviour:
   torchesInOrder: []
   autoFindTorches: 1
   lightingToolName: Torch_Level2
-  interactionRange: 4
+  interactionRange: 6
   interactionAimRadius: 0.5
   barriersToDisable:
   - {fileID: 1310408495}

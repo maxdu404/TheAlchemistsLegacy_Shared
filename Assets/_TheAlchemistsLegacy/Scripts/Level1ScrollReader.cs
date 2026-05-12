@@ -27,12 +27,23 @@ public class Level1ScrollReader : MonoBehaviour
     private Text closeText;
     private Collider[] cachedColliders;
     private Font defaultFont;
+    private TheAlchemistsLegacyLevelHud sharedHud;
     private bool isOpen;
     private bool isReadable;
 
     public bool IsReadable
     {
         get { return isReadable; }
+    }
+
+    public string ScrollTitle
+    {
+        get { return scrollTitle; }
+    }
+
+    public string ScrollBody
+    {
+        get { return scrollBody; }
     }
 
     private void Awake()
@@ -45,9 +56,14 @@ public class Level1ScrollReader : MonoBehaviour
     {
         playerCamera = Camera.main;
         playerController = FindObjectOfType<PlayerController>();
+        sharedHud = FindObjectOfType<TheAlchemistsLegacyLevelHud>();
         defaultFont = Resources.GetBuiltinResource<Font>("Arial.ttf");
 
-        BuildCanvas();
+        if (sharedHud == null)
+        {
+            BuildCanvas();
+        }
+
         SetReadable(readableAtStart);
     }
 
@@ -64,6 +80,11 @@ public class Level1ScrollReader : MonoBehaviour
         }
 
         if (!isReadable)
+        {
+            return;
+        }
+
+        if (sharedHud != null)
         {
             return;
         }

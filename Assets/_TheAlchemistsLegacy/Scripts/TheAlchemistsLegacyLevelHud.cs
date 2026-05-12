@@ -102,11 +102,8 @@ public class TheAlchemistsLegacyLevelHud : MonoBehaviour
             return;
         }
 
-        if (!isLevel1Scene
-            && Input.GetMouseButtonDown(1)
-            && (IsLookingAt(scrollObject) || (isLevel2Scene && IsLookingAtLevel2Clue()) || (isLevel4Scene && IsLookingAtLevel4Clue())))
+        if (Input.GetMouseButtonDown(1) && TryOpenLookedAtScroll())
         {
-            SetScrollOpen(true);
             return;
         }
 
@@ -761,6 +758,39 @@ public class TheAlchemistsLegacyLevelHud : MonoBehaviour
         }
 
         return "";
+    }
+
+    private bool TryOpenLookedAtScroll()
+    {
+        if (isLevel1Scene)
+        {
+            Level1ScrollReader reader = GetLookedAtLevel1ScrollReader();
+            if (reader == null || !reader.IsReadable)
+            {
+                return false;
+            }
+
+            ShowMessage(reader.ScrollTitle, reader.ScrollBody);
+            return true;
+        }
+
+        if (IsLookingAt(scrollObject) || (isLevel2Scene && IsLookingAtLevel2Clue()) || (isLevel4Scene && IsLookingAtLevel4Clue()))
+        {
+            SetScrollOpen(true);
+            return true;
+        }
+
+        return false;
+    }
+
+    private Level1ScrollReader GetLookedAtLevel1ScrollReader()
+    {
+        if (!TryLook(out RaycastHit hit))
+        {
+            return null;
+        }
+
+        return hit.collider.GetComponentInParent<Level1ScrollReader>();
     }
 
     private string GetLevel2LookPrompt(RaycastHit hit)
