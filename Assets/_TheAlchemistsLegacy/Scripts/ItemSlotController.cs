@@ -15,6 +15,7 @@ public class ItemSlotController : MonoBehaviour
 
     [Header("Interaction")]
     [SerializeField] private float interactionRange = 3.0f;
+    [SerializeField] private float interactionAimRadius = 0.22f;
 
     public bool IsFilled
     {
@@ -60,6 +61,12 @@ public class ItemSlotController : MonoBehaviour
     private GameObject FindAutoPlacedVisual()
     {
         string lowerSlotName = gameObject.name.ToLowerInvariant();
+        GameObject level4Visual = FindAutoLevel4PlacedVisual(lowerSlotName);
+        if (level4Visual != null)
+        {
+            return level4Visual;
+        }
+
         bool isFinalSealSlot = lowerSlotName.Contains("doorsealslot")
             || lowerSlotName.Contains("door_seal_slot")
             || acceptedItemName.IndexOf("FinalSeal", StringComparison.OrdinalIgnoreCase) >= 0;
@@ -78,6 +85,36 @@ public class ItemSlotController : MonoBehaviour
         return FindSceneObjectByName("FinalSealPlaced");
     }
 
+    private GameObject FindAutoLevel4PlacedVisual(string lowerSlotName)
+    {
+        if (lowerSlotName.Contains("ash_l4") || acceptedItemName.IndexOf("Ash_l4", StringComparison.OrdinalIgnoreCase) >= 0)
+        {
+            return FindSceneObjectByName("Ash_l4_Placed");
+        }
+
+        if (lowerSlotName.Contains("salt_l4") || lowerSlotName.Contains("salt") || acceptedItemName.IndexOf("Salt_l4", StringComparison.OrdinalIgnoreCase) >= 0)
+        {
+            return FindSceneObjectByName("Salt_Placed");
+        }
+
+        if (lowerSlotName.Contains("yellowstone_l4") || lowerSlotName.Contains("yellow_stone") || lowerSlotName.Contains("yellowstone") || acceptedItemName.IndexOf("YellowStone_l4", StringComparison.OrdinalIgnoreCase) >= 0)
+        {
+            return FindSceneObjectByName("YellowStone_l4_Placed");
+        }
+
+        if (lowerSlotName.Contains("bluedrop_l4") || lowerSlotName.Contains("blue_drop") || lowerSlotName.Contains("bluedrop") || acceptedItemName.IndexOf("BlueDrop_l4", StringComparison.OrdinalIgnoreCase) >= 0)
+        {
+            return FindSceneObjectByName("BlueDrop_Placed");
+        }
+
+        if (lowerSlotName.Contains("legacyseal_l4") || lowerSlotName.Contains("legacy_seal") || acceptedItemName.IndexOf("LegacySeal_l4", StringComparison.OrdinalIgnoreCase) >= 0)
+        {
+            return FindSceneObjectByName("LegacySeal_l4_Placed");
+        }
+
+        return null;
+    }
+
     private void ConfigureAcceptedItemFromSlotName()
     {
         if (!autoConfigureFromSlotName)
@@ -90,6 +127,26 @@ public class ItemSlotController : MonoBehaviour
         if (lowerName.Contains("doorsealslot") || lowerName.Contains("door_seal_slot"))
         {
             acceptedItemName = "FinalSeal";
+        }
+        else if (lowerName.Contains("legacyseal_l4") || lowerName.Contains("legacy_seal"))
+        {
+            acceptedItemName = "LegacySeal_l4";
+        }
+        else if (lowerName.Contains("ash_l4") || lowerName.Contains("ash"))
+        {
+            acceptedItemName = "Ash_l4";
+        }
+        else if (lowerName.Contains("salt_l4") || lowerName.Contains("salt"))
+        {
+            acceptedItemName = "Salt_l4";
+        }
+        else if (lowerName.Contains("yellowstone_l4") || lowerName.Contains("yellow_stone") || lowerName.Contains("yellowstone"))
+        {
+            acceptedItemName = "YellowStone_l4";
+        }
+        else if (lowerName.Contains("bluedrop_l4") || lowerName.Contains("blue_drop") || lowerName.Contains("bluedrop"))
+        {
+            acceptedItemName = "BlueDrop_l4";
         }
         else if (lowerName.Contains("slot_1") || lowerName.Contains("slot1"))
         {
@@ -170,8 +227,7 @@ public class ItemSlotController : MonoBehaviour
             return;
         }
 
-        Ray ray = playerCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0.0f));
-        if (!Physics.Raycast(ray, out RaycastHit hit, interactionRange))
+        if (!AimInteraction.Cast(playerCamera, interactionRange, interactionAimRadius, out RaycastHit hit))
         {
             return;
         }

@@ -15,6 +15,8 @@ public class Level3ExitKeyReturnTeleporter : MonoBehaviour
     [SerializeField] private Vector3 fixedLandingPosition = new Vector3(-42.257f, 1.0f, 66.629f);
     [SerializeField] private bool faceTarget = true;
     [SerializeField] private bool faceNegativeZAfterTeleport = true;
+    [SerializeField] private float maxSnapDownDistance = 1.5f;
+    [SerializeField] private float maxSnapUpDistance = 0.5f;
 
     private bool hasTeleported;
     private ItemPickup playerPickup;
@@ -106,9 +108,15 @@ public class Level3ExitKeyReturnTeleporter : MonoBehaviour
             playerController.enabled = false;
         }
 
+        PlayerController playerControllerScript = player.GetComponent<PlayerController>();
         Vector3 destination = useFixedLandingPosition
             ? fixedLandingPosition
             : targetPoint.position + targetOffset;
+        if (playerControllerScript != null)
+        {
+            destination = playerControllerScript.GetSafeGroundedPosition(destination, maxSnapDownDistance, maxSnapUpDistance);
+        }
+
         player.transform.position = destination;
 
         if (faceNegativeZAfterTeleport)
@@ -127,6 +135,11 @@ public class Level3ExitKeyReturnTeleporter : MonoBehaviour
 
         if (hadController)
         {
+            if (playerControllerScript != null)
+            {
+                playerControllerScript.ResetVerticalVelocity();
+            }
+
             playerController.enabled = true;
             playerController.Move(Vector3.zero);
         }

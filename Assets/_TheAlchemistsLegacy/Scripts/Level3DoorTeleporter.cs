@@ -8,6 +8,8 @@ public class Level3DoorTeleporter : MonoBehaviour
     [SerializeField] private Vector3 targetOffset = Vector3.zero;
     [SerializeField] private bool faceTargetForward = true;
     [SerializeField] private bool faceNegativeZAfterTeleport = true;
+    [SerializeField] private float maxSnapDownDistance = 1.5f;
+    [SerializeField] private float maxSnapUpDistance = 0.5f;
 
     [Header("Requirement")]
     [SerializeField] private bool requireHeldItem = false;
@@ -195,7 +197,14 @@ public class Level3DoorTeleporter : MonoBehaviour
             playerController.enabled = false;
         }
 
-        player.transform.position = targetDoor.position + targetOffset;
+        PlayerController playerControllerScript = player.GetComponent<PlayerController>();
+        Vector3 destination = targetDoor.position + targetOffset;
+        if (playerControllerScript != null)
+        {
+            destination = playerControllerScript.GetSafeGroundedPosition(destination, maxSnapDownDistance, maxSnapUpDistance);
+        }
+
+        player.transform.position = destination;
 
         if (faceNegativeZAfterTeleport)
         {
@@ -210,6 +219,11 @@ public class Level3DoorTeleporter : MonoBehaviour
 
         if (hadController)
         {
+            if (playerControllerScript != null)
+            {
+                playerControllerScript.ResetVerticalVelocity();
+            }
+
             playerController.enabled = true;
             playerController.Move(Vector3.zero);
         }

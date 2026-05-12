@@ -1,15 +1,27 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class PlayerController : MonoBehaviour
 {
     [Header("Movement Settings")]
     [SerializeField] private float moveSpeed = 5f;
+    [SerializeField] private float sprintMultiplier = 1.25f;
     [SerializeField] private Camera playerCamera;
 
     [Header("View Settings")]
-    [SerializeField] private float mouseSensitivity = 0.8f;
-    [SerializeField] private float maxLookUpAngle = 75f;
-    [SerializeField] private float maxLookDownAngle = -75f;
+    [SerializeField] private float mouseSensitivity = 0.5f;
+    [SerializeField] private float maxLookUpAngle = 60f;
+    [SerializeField] private float maxLookDownAngle = -60f;
+    [SerializeField] private float cameraFieldOfView = 55f;
+
+    [Header("Grounding Safety")]
+    [SerializeField] private bool snapToGroundOnStart = true;
+    [SerializeField] private bool preserveLevel0AndLevel1SpawnHeight = true;
+    [SerializeField] private float groundSnapProbeHeight = 4.0f;
+    [SerializeField] private float groundSnapProbeDistance = 12.0f;
+    [SerializeField] private float groundClearance = 0.14f;
+    [SerializeField] private float startSnapMaxDownDistance = 1.5f;
+    [SerializeField] private float startSnapMaxUpDistance = 0.5f;
 
     [Header("Jump Settings")]
     [SerializeField] private bool enableJump = false;
@@ -31,6 +43,22 @@ public class PlayerController : MonoBehaviour
         }
 
         characterController = GetComponent<CharacterController>();
+
+        if (playerCamera != null)
+        {
+            playerCamera.fieldOfView = cameraFieldOfView;
+        }
+
+        if (snapToGroundOnStart)
+        {
+            if (ShouldSnapToGroundOnStartForScene())
+            {
+                transform.position = GetSafeGroundedPosition(transform.position, startSnapMaxDownDistance, startSnapMaxUpDistance);
+            }
+
+            velocity = Vector3.zero;
+        }
+
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
     }
@@ -51,15 +79,15 @@ public class PlayerController : MonoBehaviour
             return;
         }
 
-        Vector3 center = transform.position + characterController.center;
+        Vector3 footCenter = GetCharacterFootCenter();
         float radius = characterController.radius;
 
         isGrounded =
-            Physics.CheckSphere(center, groundCheckDistance, groundMask) ||
-            Physics.CheckSphere(center + transform.forward * radius, groundCheckDistance, groundMask) ||
-            Physics.CheckSphere(center - transform.forward * radius, groundCheckDistance, groundMask) ||
-            Physics.CheckSphere(center - transform.right * radius, groundCheckDistance, groundMask) ||
-            Physics.CheckSphere(center + transform.right * radius, groundCheckDistance, groundMask);
+            Physics.CheckSphere(footCenter, groundCheckDistance, groundMask, QueryTriggerInteraction.Ignore) ||
+            Physics.CheckSphere(footCenter + transform.forward * radius, groundCheckDistance, groundMask, QueryTriggerInteraction.Ignore) ||
+            Physics.CheckSphere(footCenter - transform.forward * radius, groundCheckDistance, groundMask, QueryTriggerInteraction.Ignore) ||
+            Physics.CheckSphere(footCenter - transform.right * radius, groundCheckDistance, groundMask, QueryTriggerInteraction.Ignore) ||
+            Physics.CheckSphere(footCenter + transform.right * radius, groundCheckDistance, groundMask, QueryTriggerInteraction.Ignore);
 
         if (isGrounded && velocity.y < 0f)
         {
@@ -89,7 +117,8 @@ public class PlayerController : MonoBehaviour
 
         if (moveDirection.sqrMagnitude > 0.01f)
         {
-            characterController.Move(moveDirection * moveSpeed * Time.deltaTime);
+            float currentMoveSpeed = IsSprinting() ? moveSpeed * sprintMultiplier : moveSpeed;
+            characterController.Move(moveDirection * currentMoveSpeed * Time.deltaTime);
         }
 
         if (!isGrounded)
@@ -98,6 +127,18 @@ public class PlayerController : MonoBehaviour
         }
 
         characterController.Move(velocity * Time.deltaTime);
+    }
+
+    private Vector3 GetCharacterFootCenter()
+    {
+        if (characterController == null)
+        {
+            return transform.position;
+        }
+
+        float bottomOffset = (characterController.height * 0.5f) - characterController.center.y;
+        float probeLift = Mathf.Max(characterController.skinWidth + 0.03f, 0.08f);
+        return transform.position + Vector3.up * (probeLift - bottomOffset);
     }
 
     private void HandleMouseLook()
@@ -128,6 +169,22 @@ public class PlayerController : MonoBehaviour
         {
             velocity.y = Mathf.Sqrt(jumpForce * -2f * gravity);
         }
+    }
+
+    private bool IsSprinting()
+    {
+        return Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
+    }
+
+    private bool ShouldSnapToGroundOnStartForScene()
+    {
+        if (!preserveLevel0AndLevel1SpawnHeight)
+        {
+            return true;
+        }
+
+        string sceneName = SceneManager.GetActiveScene().name;
+        return sceneName != "Level0" && sceneName != "Level1";
     }
 
     public void UnlockCursor()
@@ -162,5 +219,81 @@ public class PlayerController : MonoBehaviour
         {
             playerCamera.transform.localRotation = Quaternion.Euler(rotationX, 0f, 0f);
         }
+    }
+
+    public Vector3 GetSafeGroundedPosition(Vector3 desiredPosition)
+    {
+        return GetSafeGroundedPosition(desiredPosition, groundSnapProbeDistance, groundSnapProbeHeight);
+    }
+
+    public Vector3 GetSafeGroundedPosition(Vector3 desiredPosition, float maxSnapDownDistance, float maxSnapUpDistance)
+    {
+        if (characterController == null)
+        {
+            characterController = GetComponent<CharacterController>();
+        }
+
+        float controllerBottomOffset = 0.0f;
+        if (characterController != null)
+        {
+            controllerBottomOffset = Mathf.Max(0.0f, (characterController.height * 0.5f) - characterController.center.y);
+        }
+
+        float clearance = groundClearance;
+        if (characterController != null)
+        {
+            clearance = Mathf.Max(clearance, characterController.skinWidth + 0.02f);
+        }
+
+        Vector3 probeOrigin = desiredPosition + Vector3.up * groundSnapProbeHeight;
+        float probeDistance = groundSnapProbeHeight + groundSnapProbeDistance;
+
+        bool controllerWasEnabled = characterController != null && characterController.enabled;
+        if (controllerWasEnabled)
+        {
+            characterController.enabled = false;
+        }
+
+        bool foundGround = TryFindGround(probeOrigin, probeDistance, out RaycastHit hit);
+
+        if (controllerWasEnabled)
+        {
+            characterController.enabled = true;
+        }
+
+        if (foundGround && IsGroundWithinSnapWindow(desiredPosition, hit.point.y, controllerBottomOffset, maxSnapDownDistance, maxSnapUpDistance))
+        {
+            desiredPosition.y = hit.point.y + controllerBottomOffset + clearance;
+        }
+
+        return desiredPosition;
+    }
+
+    public void ResetVerticalVelocity()
+    {
+        velocity = Vector3.zero;
+    }
+
+    private bool TryFindGround(Vector3 probeOrigin, float probeDistance, out RaycastHit hit)
+    {
+        if (groundMask.value != 0 && Physics.Raycast(probeOrigin, Vector3.down, out hit, probeDistance, groundMask, QueryTriggerInteraction.Ignore))
+        {
+            return true;
+        }
+
+        return Physics.Raycast(probeOrigin, Vector3.down, out hit, probeDistance, ~0, QueryTriggerInteraction.Ignore);
+    }
+
+    private bool IsGroundWithinSnapWindow(Vector3 desiredPosition, float groundY, float controllerBottomOffset, float maxSnapDownDistance, float maxSnapUpDistance)
+    {
+        float desiredGroundY = desiredPosition.y - controllerBottomOffset;
+        float delta = groundY - desiredGroundY;
+
+        if (delta < 0.0f)
+        {
+            return Mathf.Abs(delta) <= maxSnapDownDistance;
+        }
+
+        return delta <= maxSnapUpDistance;
     }
 }

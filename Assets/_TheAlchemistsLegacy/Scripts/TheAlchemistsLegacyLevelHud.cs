@@ -7,6 +7,7 @@ public class TheAlchemistsLegacyLevelHud : MonoBehaviour
     [Header("Behavior")]
     [SerializeField] private bool hideExistingCanvases = true;
     [SerializeField] private float raycastRange = 3.0f;
+    [SerializeField] private float aimAssistRadius = 0.65f;
 
     [Header("Scene Objects")]
     [SerializeField] private string scrollName = "Scroll_MasterIntro";
@@ -99,7 +100,7 @@ public class TheAlchemistsLegacyLevelHud : MonoBehaviour
             return;
         }
 
-        if (!isLevel1Scene && Input.GetMouseButtonDown(1) && IsLookingAt(scrollObject))
+        if (!isLevel1Scene && Input.GetMouseButtonDown(1) && (IsLookingAt(scrollObject) || (isLevel4Scene && IsLookingAtLevel4Clue())))
         {
             SetScrollOpen(true);
             return;
@@ -227,7 +228,21 @@ public class TheAlchemistsLegacyLevelHud : MonoBehaviour
 
         if (isLevel4Scene)
         {
-            // Reserved for the final level's HUD references.
+            if (scrollObject == null)
+            {
+                scrollObject = GameObject.Find("scroll_level");
+            }
+
+            if (scrollObject == null)
+            {
+                scrollObject = GameObject.Find("Scroll_Level");
+            }
+
+            if (scrollObject == null)
+            {
+                scrollObject = GameObject.Find("Central Tablet");
+            }
+
             return;
         }
 
@@ -312,9 +327,9 @@ public class TheAlchemistsLegacyLevelHud : MonoBehaviour
 
     private void BuildObjectivePanel(Transform parent)
     {
-        GameObject panel = CreatePanel(parent, "ObjectivePanel", new Color(0.05f, 0.045f, 0.04f, 0.78f));
+        GameObject panel = CreatePanel(parent, "ObjectivePanel", new Color(0.05f, 0.045f, 0.04f, 0.60f));
         RectTransform rect = panel.GetComponent<RectTransform>();
-        Anchor(rect, new Vector2(0.0f, 1.0f), new Vector2(0.0f, 1.0f), new Vector2(26.0f, -24.0f), new Vector2(650.0f, 108.0f), new Vector2(0.0f, 1.0f));
+        Anchor(rect, new Vector2(0.0f, 1.0f), new Vector2(0.0f, 1.0f), new Vector2(32.0f, -28.0f), new Vector2(600.0f, 108.0f), new Vector2(0.0f, 1.0f));
 
         string titleTextValue = isLevel4Scene
             ? "Legacy Trial"
@@ -330,13 +345,14 @@ public class TheAlchemistsLegacyLevelHud : MonoBehaviour
 
     private void BuildControlsPanel(Transform parent)
     {
-        GameObject panel = CreatePanel(parent, "ControlsPanel", new Color(0.05f, 0.045f, 0.04f, 0.70f));
+        GameObject panel = CreatePanel(parent, "ControlsPanel", new Color(0.05f, 0.045f, 0.04f, 0.48f));
         RectTransform rect = panel.GetComponent<RectTransform>();
-        Anchor(rect, new Vector2(0.0f, 0.0f), new Vector2(0.0f, 0.0f), new Vector2(26.0f, 26.0f), new Vector2(1030.0f, 74.0f), new Vector2(0.0f, 0.0f));
+        Anchor(rect, new Vector2(0.0f, 0.0f), new Vector2(0.0f, 0.0f), new Vector2(32.0f, 32.0f), new Vector2(780.0f, 78.0f), new Vector2(0.0f, 0.0f));
 
-        string controlsText = "WASD: Move    E: Pick up / drop    R: Recall last dropped item    Right Click: Interact    Y: Level Complete";
+        string controlsText = "「WASD」 Move   「Mouse」 Look   「Shift」 Sprint\n「E」 Pick up / Drop   「RMB」 Interact   「R」 Recall Item   「Y」 Skip to Hub";
         Text controls = CreateText(panel.transform, "ControlsText", controlsText, 19, Color.white, TextAnchor.MiddleLeft);
-        Anchor(controls.rectTransform, new Vector2(0.0f, 0.0f), new Vector2(1.0f, 1.0f), new Vector2(18.0f, 0.0f), new Vector2(-36.0f, 0.0f), new Vector2(0.0f, 0.5f));
+        controls.lineSpacing = 1.25f;
+        Anchor(controls.rectTransform, new Vector2(0.0f, 0.0f), new Vector2(1.0f, 1.0f), new Vector2(22.0f, 0.0f), new Vector2(-44.0f, -14.0f), new Vector2(0.0f, 0.5f));
     }
 
     private void BuildPromptPanel(Transform parent)
@@ -434,7 +450,7 @@ public class TheAlchemistsLegacyLevelHud : MonoBehaviour
 
         if (isLevel4Scene)
         {
-            return "Three relics, each to its mark.\nThe legacy is set in stone.";
+            return "Three lamps wait on three tables.\n\nThe left lamp remembers the third floor.\nThe right lamp remembers the second floor.\nThe middle lamp has no path.\n\nCarry the right light to the right door.";
         }
 
         return "Apprentice,\n\nTwo seals wake the old door.\nOne rests in the open. One waits inside the chest.\n\nLet the first seal answer the left hand of the room.\nLet the second complete the right.\n\nCross only when the fire fades.";
@@ -459,7 +475,7 @@ public class TheAlchemistsLegacyLevelHud : MonoBehaviour
 
         if (isLevel4Scene)
         {
-            return "Apprentice,\n\nThe final legacy waits beyond the estate. Observe the marks, recover the relics, and set each one where it belongs.";
+            return "Apprentice,\n\nThe final legacy is not taken. Four signs mark the old recipe: FIRE, SALT, STONE, and DROP.\n\nRecover each material, return it to the old cauldron, and carry the completed seal to the wall gate.";
         }
 
         return "Apprentice,\n\nYou wake inside the old workshop. The master has left your first trial: learn the room, recover two stamps, and prove you can follow the marks of the craft.\n\nRead the note on the table first. It explains how to open the way out.";
@@ -509,7 +525,37 @@ public class TheAlchemistsLegacyLevelHud : MonoBehaviour
 
         if (isLevel4Scene)
         {
-            objectiveText.text = "Goal: place each relic on its matching mark.";
+            if (IsHoldingItem("forge_tool"))
+            {
+                objectiveText.text = "Goal: use the forge tool on FireWooForAsh.";
+                return;
+            }
+
+            if (IsHoldingItem("Key_l4_salt"))
+            {
+                objectiveText.text = "Goal: use the salt key to open Chest_l4_salt.";
+                return;
+            }
+
+            if (IsHoldingItem("Ash_l4") || IsHoldingItem("Salt_l4") || IsHoldingItem("YellowStone_l4") || IsHoldingItem("BlueDrop_l4"))
+            {
+                objectiveText.text = "Goal: return this material to the central cauldron.";
+                return;
+            }
+
+            if (IsHoldingItem("LegacySeal_l4"))
+            {
+                objectiveText.text = "Goal: place the Legacy Seal in the castle-wall gate.";
+                return;
+            }
+
+            if (IsHoldingItem("lamp_2th") || IsHoldingItem("lamp_3th") || IsHoldingItem("lamp_no"))
+            {
+                objectiveText.text = "Goal: carry this lamp to its matching door.";
+                return;
+            }
+
+            objectiveText.text = "Goal: gather FIRE, SALT, STONE, and DROP, then return each one to the cauldron.";
             return;
         }
 
@@ -770,7 +816,7 @@ public class TheAlchemistsLegacyLevelHud : MonoBehaviour
             return "Right Click: Take the unusual light";
         }
 
-        if (target.GetComponentInParent<Level3KeyChest>() != null)
+        if (target.GetComponentInParent<KeyChestController>() != null)
         {
             return IsHoldingItem("key_l3_chest")
                 ? "Right Click: Unlock the chest"
@@ -857,12 +903,240 @@ public class TheAlchemistsLegacyLevelHud : MonoBehaviour
 
     private string GetLevel4LookPrompt(RaycastHit hit)
     {
+        Transform target = hit.collider.transform;
+        string lowerTargetName = GetLowerHierarchyName(target);
+
+        if ((lowerTargetName.Contains("central") && lowerTargetName.Contains("tablet")) || lowerTargetName.Contains("scroll_level"))
+        {
+            return "Right Click: Read the clue";
+        }
+
+        Level4AshFromFirewood ashFromFirewood = target.GetComponentInParent<Level4AshFromFirewood>();
+        if (ashFromFirewood != null)
+        {
+            if (ashFromFirewood.IsBurned)
+            {
+                return "Ash is ready below the fire sign.";
+            }
+
+            return IsHoldingItem(ashFromFirewood.RequiredToolName)
+                ? "Right Click: Use the forge tool to make Ash"
+                : "Find forge_tool first.";
+        }
+
+        KeyChestController saltChest = target.GetComponentInParent<KeyChestController>();
+        if (saltChest != null && lowerTargetName.Contains("salt"))
+        {
+            if (saltChest.IsOpen)
+            {
+                return "The salt chest is open.";
+            }
+
+            return IsHoldingItem("Key_l4_salt")
+                ? "Right Click: Open Chest_l4_salt"
+                : "Find Key_l4_salt on this stall.";
+        }
+
+        Level4LampDoorTeleporter lampDoor = target.GetComponentInParent<Level4LampDoorTeleporter>();
+        if (lampDoor != null)
+        {
+            string requiredLamp = lampDoor.RequiredHeldItemName;
+            if (string.IsNullOrWhiteSpace(requiredLamp))
+            {
+                return "Right Click: Enter";
+            }
+
+            return IsHoldingItem(requiredLamp)
+                ? "Right Click: Carry " + GetFriendlyLampName(requiredLamp) + " through this door"
+                : "This door needs " + GetFriendlyLampName(requiredLamp) + ".";
+        }
+
+        if (lowerTargetName.Contains("lamp_2th") || lowerTargetName.Contains("lamp_3th") || lowerTargetName.Contains("lamp_no"))
+        {
+            string lampPickupPrompt = GetLevel4PickupPrompt(target);
+            return !string.IsNullOrEmpty(lampPickupPrompt) ? lampPickupPrompt : "Choose the lamp that matches the door clue.";
+        }
+
+        if (lowerTargetName.Contains("lantern_l4") || lowerTargetName.Contains("lantern"))
+        {
+            return hit.collider.CompareTag("Pickup") ? "E: Take the master's lantern" : "The lantern reveals marks hidden in dark stone.";
+        }
+
+        if (lowerTargetName.Contains("dark") && lowerTargetName.Contains("pedestal"))
+        {
+            return IsHoldingItem("lantern_l4") || IsHoldingItem("lantern")
+                ? "Right Click: Reveal the hidden mark"
+                : "Carry the lantern to read this dark stone.";
+        }
+
+        if (lowerTargetName.Contains("sealpillar") || (lowerTargetName.Contains("seal") && lowerTargetName.Contains("pillar")))
+        {
+            return "Right Click: Set the seal order";
+        }
+
+        if (lowerTargetName.Contains("final") && lowerTargetName.Contains("door"))
+        {
+            return "The castle-wall gate waits for the Legacy Seal.";
+        }
+
+        ItemSlotController slot = target.GetComponentInParent<ItemSlotController>();
+        if (slot != null)
+        {
+            string requiredItemName = GetFriendlySlotRequirement(slot.AcceptedItemName);
+            if (slot.IsFilled)
+            {
+                return requiredItemName + " is placed.";
+            }
+
+            if (itemPickup != null && itemPickup.isHoldingItem && itemPickup.currentItem != null)
+            {
+                return IsHoldingItem(slot.AcceptedItemName)
+                    ? "Right Click: Place " + requiredItemName + " here"
+                    : "This slot needs " + requiredItemName + ".";
+            }
+
+            if (IsLevel4AlchemySlot(slot.AcceptedItemName))
+            {
+                return "This slot needs " + requiredItemName + ".";
+            }
+
+            if (lowerTargetName.Contains("circle"))
+            {
+                return "This mark waits for the Circle Relic.";
+            }
+
+            if (lowerTargetName.Contains("square"))
+            {
+                return "This mark waits for the Square Relic.";
+            }
+
+            if (lowerTargetName.Contains("triangle"))
+            {
+                return "This mark waits for the Triangle Relic.";
+            }
+
+            return "Find the matching relic first.";
+        }
+
         if (hit.collider.CompareTag("Pickup"))
         {
-            return GetPickupPrompt(hit.collider.gameObject);
+            string level4PickupPrompt = GetLevel4PickupPrompt(target);
+            return !string.IsNullOrEmpty(level4PickupPrompt) ? level4PickupPrompt : GetPickupPrompt(hit.collider.gameObject);
         }
 
         return "";
+    }
+
+    private string GetFriendlyLampName(string lampName)
+    {
+        if (string.IsNullOrWhiteSpace(lampName))
+        {
+            return "lamp";
+        }
+
+        string lowerName = lampName.ToLowerInvariant();
+        if (lowerName.Contains("lamp_2th"))
+        {
+            return "the second-floor lamp";
+        }
+
+        if (lowerName.Contains("lamp_3th"))
+        {
+            return "the third-floor lamp";
+        }
+
+        if (lowerName.Contains("lamp_no"))
+        {
+            return "the broken lamp";
+        }
+
+        return lampName;
+    }
+
+    private bool IsLevel4AlchemySlot(string acceptedItemName)
+    {
+        if (string.IsNullOrWhiteSpace(acceptedItemName))
+        {
+            return false;
+        }
+
+        string lowerName = acceptedItemName.ToLowerInvariant();
+        return lowerName.Contains("ash_l4")
+            || lowerName.Contains("salt_l4")
+            || lowerName.Contains("yellowstone_l4")
+            || lowerName.Contains("yellow_stone")
+            || lowerName.Contains("bluedrop_l4")
+            || lowerName.Contains("blue_drop")
+            || lowerName.Contains("legacyseal_l4")
+            || lowerName.Contains("legacy_seal");
+    }
+
+    private string GetFriendlySlotRequirement(string acceptedItemName)
+    {
+        if (string.IsNullOrWhiteSpace(acceptedItemName))
+        {
+            return "the matching item";
+        }
+
+        string lowerName = acceptedItemName.ToLowerInvariant();
+        if (lowerName.Contains("ash_l4"))
+        {
+            return "Ash";
+        }
+
+        if (lowerName.Contains("salt_l4"))
+        {
+            return "Salt";
+        }
+
+        if (lowerName.Contains("yellowstone_l4") || lowerName.Contains("yellow_stone"))
+        {
+            return "Yellow Stone";
+        }
+
+        if (lowerName.Contains("bluedrop_l4") || lowerName.Contains("blue_drop"))
+        {
+            return "Blue Drop";
+        }
+
+        if (lowerName.Contains("legacyseal_l4") || lowerName.Contains("legacy_seal"))
+        {
+            return "Legacy Seal";
+        }
+
+        if (lowerName.Contains("circle"))
+        {
+            return "Circle Relic";
+        }
+
+        if (lowerName.Contains("square"))
+        {
+            return "Square Relic";
+        }
+
+        if (lowerName.Contains("triangle"))
+        {
+            return "Triangle Relic";
+        }
+
+        return acceptedItemName.Replace("_l4", "").Replace("_", " ");
+    }
+
+    private string GetLowerHierarchyName(Transform target)
+    {
+        string names = "";
+        while (target != null)
+        {
+            if (!string.IsNullOrEmpty(names))
+            {
+                names += " ";
+            }
+
+            names += target.name.ToLowerInvariant();
+            target = target.parent;
+        }
+
+        return names;
     }
 
     private string GetLevel1PickupPrompt(Transform target)
@@ -961,6 +1235,76 @@ public class TheAlchemistsLegacyLevelHud : MonoBehaviour
             return "E: Take the birth-house torch";
         }
 
+        if (lowerName.Contains("ash_l4"))
+        {
+            return "E: Take Ash";
+        }
+
+        if (lowerName.Contains("salt_l4"))
+        {
+            return "E: Take Salt";
+        }
+
+        if (lowerName.Contains("yellowstone_l4") || lowerName.Contains("yellow_stone"))
+        {
+            return "E: Take Yellow Stone";
+        }
+
+        if (lowerName.Contains("bluedrop_l4") || lowerName.Contains("blue_drop"))
+        {
+            return "E: Take Blue Drop";
+        }
+
+        if (lowerName.Contains("key_l4_salt"))
+        {
+            return "E: Take the salt key";
+        }
+
+        if (lowerName.Contains("forge_tool"))
+        {
+            return "E: Take the forge tool";
+        }
+
+        if (lowerName.Contains("legacyseal_l4") || lowerName.Contains("legacy_seal"))
+        {
+            return "E: Take the Legacy Seal";
+        }
+
+        if (lowerName.Contains("lamp_2th"))
+        {
+            return "E: Take the second-floor lamp";
+        }
+
+        if (lowerName.Contains("lamp_3th"))
+        {
+            return "E: Take the third-floor lamp";
+        }
+
+        if (lowerName.Contains("lamp_no"))
+        {
+            return "E: Take the broken lamp";
+        }
+
+        if (lowerName.Contains("circlerelic_l4") || lowerName.Contains("circle_relic") || (lowerName.Contains("circle") && lowerName.Contains("relic")))
+        {
+            return "E: Take the Circle Relic";
+        }
+
+        if (lowerName.Contains("squarerelic_l4") || lowerName.Contains("square_relic") || (lowerName.Contains("square") && lowerName.Contains("relic")))
+        {
+            return "E: Take the Square Relic";
+        }
+
+        if (lowerName.Contains("trianglerelic_l4") || lowerName.Contains("triangle_relic") || (lowerName.Contains("triangle") && lowerName.Contains("relic")))
+        {
+            return "E: Take the Triangle Relic";
+        }
+
+        if (lowerName.Contains("lantern_l4"))
+        {
+            return "E: Take the master's lantern";
+        }
+
         if (lowerName.Contains("finalseal") || lowerName.Contains("sword"))
         {
             return "E: Take sword";
@@ -1046,6 +1390,68 @@ public class TheAlchemistsLegacyLevelHud : MonoBehaviour
         return "";
     }
 
+    private string GetLevel4PickupPrompt(Transform target)
+    {
+        while (target != null)
+        {
+            string lowerName = target.name.ToLowerInvariant();
+
+            if (lowerName.Contains("ash_l4"))
+            {
+                return "E: Take Ash";
+            }
+
+            if (lowerName.Contains("salt_l4"))
+            {
+                return "E: Take Salt";
+            }
+
+            if (lowerName.Contains("yellowstone_l4") || lowerName.Contains("yellow_stone"))
+            {
+                return "E: Take Yellow Stone";
+            }
+
+            if (lowerName.Contains("bluedrop_l4") || lowerName.Contains("blue_drop"))
+            {
+                return "E: Take Blue Drop";
+            }
+
+        if (lowerName.Contains("key_l4_salt"))
+        {
+            return "E: Take the salt key";
+        }
+
+        if (lowerName.Contains("forge_tool"))
+        {
+            return "E: Take the forge tool";
+        }
+
+        if (lowerName.Contains("legacyseal_l4") || lowerName.Contains("legacy_seal"))
+        {
+            return "E: Take the Legacy Seal";
+            }
+
+            if (lowerName.Contains("lamp_2th"))
+            {
+                return "E: Take the second-floor lamp";
+            }
+
+            if (lowerName.Contains("lamp_3th"))
+            {
+                return "E: Take the third-floor lamp";
+            }
+
+            if (lowerName.Contains("lamp_no"))
+            {
+                return "E: Take the broken lamp";
+            }
+
+            target = target.parent;
+        }
+
+        return "";
+    }
+
     private string GetFriendlyItemName(GameObject item)
     {
         if (item == null)
@@ -1095,6 +1501,76 @@ public class TheAlchemistsLegacyLevelHud : MonoBehaviour
             return "Torch";
         }
 
+        if (lowerName.Contains("ash_l4"))
+        {
+            return "Ash";
+        }
+
+        if (lowerName.Contains("salt_l4"))
+        {
+            return "Salt";
+        }
+
+        if (lowerName.Contains("yellowstone_l4") || lowerName.Contains("yellow_stone"))
+        {
+            return "Yellow Stone";
+        }
+
+        if (lowerName.Contains("bluedrop_l4") || lowerName.Contains("blue_drop"))
+        {
+            return "Blue Drop";
+        }
+
+        if (lowerName.Contains("key_l4_salt"))
+        {
+            return "Salt Key";
+        }
+
+        if (lowerName.Contains("forge_tool"))
+        {
+            return "Forge Tool";
+        }
+
+        if (lowerName.Contains("legacyseal_l4") || lowerName.Contains("legacy_seal"))
+        {
+            return "Legacy Seal";
+        }
+
+        if (lowerName.Contains("lamp_2th"))
+        {
+            return "Second-Floor Lamp";
+        }
+
+        if (lowerName.Contains("lamp_3th"))
+        {
+            return "Third-Floor Lamp";
+        }
+
+        if (lowerName.Contains("lamp_no"))
+        {
+            return "Broken Lamp";
+        }
+
+        if (lowerName.Contains("circlerelic_l4") || lowerName.Contains("circle_relic") || (lowerName.Contains("circle") && lowerName.Contains("relic")))
+        {
+            return "Circle Relic";
+        }
+
+        if (lowerName.Contains("squarerelic_l4") || lowerName.Contains("square_relic") || (lowerName.Contains("square") && lowerName.Contains("relic")))
+        {
+            return "Square Relic";
+        }
+
+        if (lowerName.Contains("trianglerelic_l4") || lowerName.Contains("triangle_relic") || (lowerName.Contains("triangle") && lowerName.Contains("relic")))
+        {
+            return "Triangle Relic";
+        }
+
+        if (lowerName.Contains("lantern_l4"))
+        {
+            return "Master's Lantern";
+        }
+
         if (lowerName.Contains("finalseal") || lowerName.Contains("sword"))
         {
             return "sword";
@@ -1138,6 +1614,19 @@ public class TheAlchemistsLegacyLevelHud : MonoBehaviour
         return targetObject != null && TryLook(out RaycastHit hit) && Matches(hit.collider.transform, targetObject);
     }
 
+    private bool IsLookingAtLevel4Clue()
+    {
+        if (!TryLook(out RaycastHit hit))
+        {
+            return false;
+        }
+
+        string lowerTargetName = GetLowerHierarchyName(hit.collider.transform);
+        return lowerTargetName.Contains("scroll_level")
+            || lowerTargetName.Contains("scroll") && lowerTargetName.Contains("level")
+            || lowerTargetName.Contains("central") && lowerTargetName.Contains("tablet");
+    }
+
     private bool TryLook(out RaycastHit hit)
     {
         hit = default;
@@ -1146,8 +1635,7 @@ public class TheAlchemistsLegacyLevelHud : MonoBehaviour
             return false;
         }
 
-        Ray ray = playerCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0.0f));
-        return Physics.Raycast(ray, out hit, raycastRange);
+        return AimInteraction.Cast(playerCamera, raycastRange, aimAssistRadius, out hit);
     }
 
     private bool Matches(Transform transformToCheck, GameObject targetObject)

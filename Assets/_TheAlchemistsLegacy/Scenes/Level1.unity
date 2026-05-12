@@ -1129,7 +1129,7 @@ Camera:
     height: 1
   near clip plane: 0.3
   far clip plane: 1000
-  field of view: 60
+  field of view: 55
   orthographic: 0
   orthographic size: 5
   m_Depth: 0
@@ -10818,7 +10818,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1379484944}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f67d1c4e6a4de0841937ebc175a670e8, type: 3}
   m_Name: 
@@ -10832,7 +10832,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1379484944}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5fea29bb7c508c244a1f805a5fd3fc4d, type: 3}
   m_Name: 
@@ -12881,10 +12881,18 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   moveSpeed: 5
+  sprintMultiplier: 1.25
   playerCamera: {fileID: 141215071}
-  mouseSensitivity: 2
-  maxLookUpAngle: 90
-  maxLookDownAngle: -90
+  mouseSensitivity: 0.5
+  maxLookUpAngle: 60
+  maxLookDownAngle: -60
+  cameraFieldOfView: 55
+  snapToGroundOnStart: 1
+  groundSnapProbeHeight: 4
+  groundSnapProbeDistance: 12
+  groundClearance: 0.04
+  startSnapMaxDownDistance: 1.5
+  startSnapMaxUpDistance: 0.5
   enableJump: 0
   jumpForce: 5
   gravity: -9.81

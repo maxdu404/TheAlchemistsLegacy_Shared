@@ -3,6 +3,8 @@
 **Status:** 记录中 — 全部四关完成后实施  
 **来源：** Tutor 评测反馈 + GDD Known Flaws 整合
 
+**Level 4 final design lock:** see `Assets/_TheAlchemistsLegacy/Docs/Level4FinalDesign.md`
+
 ---
 
 ## 优先级排序（按评分影响）

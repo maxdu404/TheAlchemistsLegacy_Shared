@@ -5,7 +5,8 @@ public class ItemPickup : MonoBehaviour
 {
     [Header("Pick Up Settings")]
     public KeyCode pickupKey = KeyCode.E;
-    public float pickupRange = 2.0f;
+    public float pickupRange = 3.0f;
+    [SerializeField] private float pickupAimRadius = 0.65f;
     public Transform handPosition;
     public LayerMask pickupLayer;
 
@@ -81,8 +82,7 @@ public class ItemPickup : MonoBehaviour
             return;
         }
 
-        Ray ray = playerCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0.0f));
-        if (!Physics.Raycast(ray, out RaycastHit hit, pickupRange, pickupLayer))
+        if (!AimInteraction.Cast(playerCamera, pickupRange, pickupAimRadius, pickupLayer, QueryTriggerInteraction.Collide, out RaycastHit hit))
         {
             return;
         }

@@ -1,18 +1,26 @@
+using System;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class KeyChestController : MonoBehaviour
 {
-    [Header("Chest")]
-    public Transform lid;
-    public float openAngle = -90f;
-    public float openSpeed = 2f;
+    [Header("Required Key")]
+    [SerializeField] private string keyItemName = "Key_l3_chest";
+    [SerializeField] private bool autoConfigureLevel4SaltChest = true;
+    [SerializeField] private bool consumeKeyOnOpen = true;
 
-    [Header("Interaction")]
-    public float interactionRange = 3f;
+    [Header("Chest")]
+    [SerializeField] private Transform lid;
+    [SerializeField] private float openAngle = -90.0f;
+    [SerializeField] private float openSpeed = 2.0f;
 
     [Header("Contents")]
-    [SerializeField] private GameObject[] contents;
+    [SerializeField] private GameObject[] contentsToReveal;
     [SerializeField] private bool hideContentsUntilOpen = true;
+
+    [Header("Interaction")]
+    [SerializeField] private float interactionRange = 3.0f;
+    [SerializeField] private float interactionAimRadius = 0.22f;
 
     public bool IsOpen
     {
@@ -23,18 +31,35 @@ public class KeyChestController : MonoBehaviour
     private Quaternion closedRotation;
     private Quaternion openRotation;
     private Camera playerCamera;
+    private ItemPickup playerPickup;
+
+    private void Reset()
+    {
+        ConfigureFromName();
+    }
+
+    private void OnValidate()
+    {
+        ConfigureFromName();
+    }
 
     private void Awake()
     {
+        ConfigureFromName();
+        ConfigureLevel4ContentsFromName();
+
         if (lid == null)
         {
-            lid = transform.Find("chest_top");
+            lid = FindLid();
         }
     }
 
     private void Start()
     {
+        ConfigureFromName();
+        ConfigureLevel4ContentsFromName();
         playerCamera = Camera.main;
+        playerPickup = ItemPickup.instance != null ? ItemPickup.instance : FindObjectOfType<ItemPickup>();
         SetContentsAvailable(false);
 
         if (lid != null)
@@ -42,6 +67,61 @@ public class KeyChestController : MonoBehaviour
             closedRotation = lid.localRotation;
             openRotation = closedRotation * Quaternion.Euler(openAngle, 0.0f, 0.0f);
         }
+    }
+
+    private void ConfigureFromName()
+    {
+        if (!autoConfigureLevel4SaltChest)
+        {
+            return;
+        }
+
+        if (gameObject.name.IndexOf("Chest_l4_salt", StringComparison.OrdinalIgnoreCase) >= 0)
+        {
+            keyItemName = "Key_l4_salt";
+        }
+    }
+
+    private void ConfigureLevel4ContentsFromName()
+    {
+        if (!autoConfigureLevel4SaltChest)
+        {
+            return;
+        }
+
+        if (gameObject.name.IndexOf("Chest_l4_salt", StringComparison.OrdinalIgnoreCase) < 0)
+        {
+            return;
+        }
+
+        if (HasContentsAssigned())
+        {
+            return;
+        }
+
+        GameObject salt = FindSceneObjectByName("Salt_l4");
+        if (salt != null)
+        {
+            contentsToReveal = new[] { salt };
+        }
+    }
+
+    private bool HasContentsAssigned()
+    {
+        if (contentsToReveal == null || contentsToReveal.Length == 0)
+        {
+            return false;
+        }
+
+        foreach (GameObject content in contentsToReveal)
+        {
+            if (content != null)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private void Update()
@@ -62,22 +142,65 @@ public class KeyChestController : MonoBehaviour
     {
         if (playerCamera == null)
         {
-            return;
+            playerCamera = Camera.main;
         }
 
-        Ray ray = playerCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0.0f));
-        if (!Physics.Raycast(ray, out RaycastHit hit, interactionRange))
+        if (playerPickup == null)
+        {
+            playerPickup = ItemPickup.instance != null ? ItemPickup.instance : FindObjectOfType<ItemPickup>();
+        }
+
+        if (playerCamera == null || playerPickup == null)
         {
             return;
         }
 
-        if (hit.collider.gameObject == gameObject || hit.collider.transform.IsChildOf(transform))
+        if (!AimInteraction.Cast(playerCamera, interactionRange, interactionAimRadius, out RaycastHit hit))
         {
-            OpenChest();
+            return;
         }
+
+        if (!MatchesThisChest(hit.collider.transform))
+        {
+            return;
+        }
+
+        if (!IsHoldingKey())
+        {
+            Debug.Log(gameObject.name + " needs " + keyItemName);
+            return;
+        }
+
+        OpenChest();
     }
 
-    public void OpenChest()
+    private bool IsHoldingKey()
+    {
+        if (!playerPickup.isHoldingItem || playerPickup.currentItem == null)
+        {
+            return false;
+        }
+
+        return NameContains(playerPickup.currentItem.name, keyItemName)
+            || NameContains(playerPickup.currentItemName, keyItemName);
+    }
+
+    private bool NameContains(string source, string expected)
+    {
+        if (string.IsNullOrEmpty(source) || string.IsNullOrEmpty(expected))
+        {
+            return false;
+        }
+
+        return source.IndexOf(expected, StringComparison.OrdinalIgnoreCase) >= 0;
+    }
+
+    private bool MatchesThisChest(Transform hitTransform)
+    {
+        return hitTransform == transform || hitTransform.IsChildOf(transform);
+    }
+
+    private void OpenChest()
     {
         if (isOpen)
         {
@@ -85,17 +208,27 @@ public class KeyChestController : MonoBehaviour
         }
 
         isOpen = true;
+
+        if (consumeKeyOnOpen)
+        {
+            Destroy(playerPickup.currentItem);
+            playerPickup.currentItem = null;
+            playerPickup.currentItemName = "";
+            playerPickup.isHoldingItem = false;
+        }
+
         SetContentsAvailable(true);
+        Debug.Log(gameObject.name + " opened.");
     }
 
     private void SetContentsAvailable(bool isAvailable)
     {
-        if (contents == null)
+        if (contentsToReveal == null)
         {
             return;
         }
 
-        foreach (GameObject content in contents)
+        foreach (GameObject content in contentsToReveal)
         {
             if (content == null)
             {
@@ -117,5 +250,58 @@ public class KeyChestController : MonoBehaviour
                 contentBody.isKinematic = !isAvailable;
             }
         }
+    }
+
+    private Transform FindLid()
+    {
+        foreach (Transform child in GetComponentsInChildren<Transform>(true))
+        {
+            string lowerName = child.name.ToLowerInvariant();
+            if (lowerName.Contains("lid") || lowerName.Contains("top"))
+            {
+                return child;
+            }
+        }
+
+        return null;
+    }
+
+    private GameObject FindSceneObjectByName(string objectName)
+    {
+        if (string.IsNullOrWhiteSpace(objectName))
+        {
+            return null;
+        }
+
+        Scene activeScene = SceneManager.GetActiveScene();
+        foreach (GameObject rootObject in activeScene.GetRootGameObjects())
+        {
+            Transform match = FindChildByName(rootObject.transform, objectName);
+            if (match != null)
+            {
+                return match.gameObject;
+            }
+        }
+
+        return null;
+    }
+
+    private Transform FindChildByName(Transform root, string objectName)
+    {
+        if (root.name.Equals(objectName, StringComparison.OrdinalIgnoreCase))
+        {
+            return root;
+        }
+
+        foreach (Transform child in root)
+        {
+            Transform match = FindChildByName(child, objectName);
+            if (match != null)
+            {
+                return match;
+            }
+        }
+
+        return null;
     }
 }
