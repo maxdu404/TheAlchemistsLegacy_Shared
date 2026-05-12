@@ -20,6 +20,7 @@ public class Level3IceMelt : MonoBehaviour
 
     [Header("Interaction")]
     [SerializeField] private float interactionRange = 3.0f;
+    [SerializeField] private float interactionAimRadius = 0.22f;
 
     public bool IsMelted
     {
@@ -32,6 +33,7 @@ public class Level3IceMelt : MonoBehaviour
 
     private void Start()
     {
+        ConfigureFromName();
         playerCamera = Camera.main;
         playerPickup = ItemPickup.instance != null ? ItemPickup.instance : FindObjectOfType<ItemPickup>();
 
@@ -46,6 +48,27 @@ public class Level3IceMelt : MonoBehaviour
         }
 
         SetObjectsAvailable(extraObjectsToReveal, false);
+    }
+
+    private void Reset()
+    {
+        ConfigureFromName();
+    }
+
+    private void OnValidate()
+    {
+        ConfigureFromName();
+    }
+
+    private void ConfigureFromName()
+    {
+        string lowerName = gameObject.name.ToLowerInvariant();
+        if (lowerName.Contains("ice_l2s") || lowerName.Contains("ice_l2"))
+        {
+            requiredTorchName = "torch_for_ice_l2";
+            lanternBaseObjectName = "YellowStone_l4";
+            hideLanternBaseUntilMelted = true;
+        }
     }
 
     private void Update()
@@ -72,8 +95,7 @@ public class Level3IceMelt : MonoBehaviour
             return;
         }
 
-        Ray ray = playerCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0.0f));
-        if (!Physics.Raycast(ray, out RaycastHit hit, interactionRange))
+        if (!AimInteraction.Cast(playerCamera, interactionRange, interactionAimRadius, out RaycastHit hit))
         {
             return;
         }
@@ -114,7 +136,9 @@ public class Level3IceMelt : MonoBehaviour
         return NameContains(playerPickup.currentItem.name, requiredTorchName)
             || NameContains(playerPickup.currentItemName, requiredTorchName)
             || NameContains(playerPickup.currentItem.name, "torch_for_ice_l3")
-            || NameContains(playerPickup.currentItemName, "torch_for_ice_l3");
+            || NameContains(playerPickup.currentItemName, "torch_for_ice_l3")
+            || NameContains(playerPickup.currentItem.name, "torch_for_ice_l2")
+            || NameContains(playerPickup.currentItemName, "torch_for_ice_l2");
     }
 
     private bool MatchesThisIce(Transform hitTransform)
@@ -131,7 +155,7 @@ public class Level3IceMelt : MonoBehaviour
         SetObjectsAvailable(extraObjectsToHide, false);
 
         SetObjectAvailable(gameObject, false);
-        Debug.Log("Ice_l3 melted. The revealed object is available.");
+        Debug.Log(gameObject.name + " melted. The revealed object is available.");
     }
 
     private bool NameContains(string source, string expected)

@@ -7,9 +7,10 @@ public class Level4LampDoorTeleporter : MonoBehaviour
     [Header("Teleport")]
     [SerializeField] private Transform targetDoor;
     [SerializeField] private string targetDoorName = "";
+    [SerializeField] private bool useFixedLandingPosition = true;
+    [SerializeField] private Vector3 fixedLandingPosition = Vector3.zero;
     [SerializeField] private Vector3 targetOffset = Vector3.zero;
-    [SerializeField] private bool faceTargetForward = true;
-    [SerializeField] private bool faceNegativeZAfterTeleport = true;
+    [SerializeField] private bool faceNegativeXAfterTeleport = true;
     [SerializeField] private float maxSnapDownDistance = 1.5f;
     [SerializeField] private float maxSnapUpDistance = 0.5f;
 
@@ -20,6 +21,8 @@ public class Level4LampDoorTeleporter : MonoBehaviour
     [Header("Interaction")]
     [SerializeField] private float interactionRange = 3.0f;
     [SerializeField] private float interactionAimRadius = 0.22f;
+    [SerializeField] private bool teleportWhenPlayerIsNear = true;
+    [SerializeField] private float proximityRange = 2.0f;
     [SerializeField] private float teleportCooldown = 1.0f;
 
     public string RequiredHeldItemName
@@ -30,6 +33,7 @@ public class Level4LampDoorTeleporter : MonoBehaviour
     private Camera playerCamera;
     private ItemPickup playerPickup;
     private CharacterController playerController;
+    private Transform playerTransform;
     private bool isUnlocked;
     private static float lastTeleportTime = -999.0f;
 
@@ -61,18 +65,17 @@ public class Level4LampDoorTeleporter : MonoBehaviour
         GameObject player = GameObject.FindGameObjectWithTag("Player");
         if (player != null)
         {
+            playerTransform = player.transform;
             playerController = player.GetComponent<CharacterController>();
         }
     }
 
     private void Update()
     {
-        if (!Input.GetMouseButtonDown(1))
+        if (teleportWhenPlayerIsNear)
         {
-            return;
+            TryTeleportFromProximity();
         }
-
-        TryTeleport();
     }
 
     private void AutoConfigureFromName()
@@ -90,6 +93,11 @@ public class Level4LampDoorTeleporter : MonoBehaviour
             {
                 requiredHeldItemName = "lamp_l4_2th";
             }
+
+            if (fixedLandingPosition == Vector3.zero)
+            {
+                fixedLandingPosition = new Vector3(-41.50396f, 7.897f, 108.365f);
+            }
         }
         else if (lowerName.Contains("3th"))
         {
@@ -102,6 +110,67 @@ public class Level4LampDoorTeleporter : MonoBehaviour
             {
                 requiredHeldItemName = "lamp_3th";
             }
+
+            if (fixedLandingPosition == Vector3.zero)
+            {
+                fixedLandingPosition = new Vector3(-39.3478f, 13.841f, 104.893f);
+            }
+        }
+    }
+
+    private void TryTeleportFromProximity()
+    {
+        if (Time.time - lastTeleportTime < teleportCooldown)
+        {
+            return;
+        }
+
+        if (targetDoor == null)
+        {
+            if (!string.IsNullOrWhiteSpace(targetDoorName))
+            {
+                GameObject targetObject = FindSceneObjectByName(targetDoorName);
+                if (targetObject != null)
+                {
+                    targetDoor = targetObject.transform;
+                }
+            }
+
+            if (targetDoor == null)
+            {
+                return;
+            }
+        }
+
+        if (playerTransform == null)
+        {
+            GameObject player = GameObject.FindGameObjectWithTag("Player");
+            if (player == null)
+            {
+                return;
+            }
+
+            playerTransform = player.transform;
+            playerController = player.GetComponent<CharacterController>();
+        }
+
+        float distance = Vector3.Distance(playerTransform.position, transform.position);
+        if (distance > proximityRange)
+        {
+            return;
+        }
+
+        if (!CanUseDoor())
+        {
+            return;
+        }
+
+        TeleportPlayer();
+        lastTeleportTime = Time.time;
+
+        if (keepUnlockedAfterSuccessfulUse)
+        {
+            isUnlocked = true;
         }
     }
 
@@ -123,6 +192,7 @@ public class Level4LampDoorTeleporter : MonoBehaviour
 
         if (targetDoor == null)
         {
+            Debug.LogWarning(gameObject.name + ": cannot find target '" + targetDoorName + "' in scene.");
             return;
         }
 
@@ -153,7 +223,7 @@ public class Level4LampDoorTeleporter : MonoBehaviour
 
         if (!CanUseDoor())
         {
-            Debug.Log(gameObject.name + " needs " + requiredHeldItemName);
+            Debug.Log(gameObject.name + " needs " + requiredHeldItemName + ". Holding: " + (playerPickup != null ? playerPickup.currentItemName : "nothing"));
             return;
         }
 
@@ -176,6 +246,11 @@ public class Level4LampDoorTeleporter : MonoBehaviour
         if (string.IsNullOrWhiteSpace(requiredHeldItemName))
         {
             return true;
+        }
+
+        if (playerPickup == null)
+        {
+            playerPickup = ItemPickup.instance != null ? ItemPickup.instance : FindObjectOfType<ItemPickup>();
         }
 
         if (playerPickup == null || !playerPickup.isHoldingItem || playerPickup.currentItem == null)
@@ -222,7 +297,9 @@ public class Level4LampDoorTeleporter : MonoBehaviour
         }
 
         PlayerController playerControllerScript = player.GetComponent<PlayerController>();
-        Vector3 destination = targetDoor.position + targetOffset;
+        Vector3 destination = (useFixedLandingPosition && fixedLandingPosition != Vector3.zero)
+            ? fixedLandingPosition
+            : (targetDoor != null ? targetDoor.position + targetOffset : player.transform.position);
         if (playerControllerScript != null)
         {
             destination = playerControllerScript.GetSafeGroundedPosition(destination, maxSnapDownDistance, maxSnapUpDistance);
@@ -230,15 +307,9 @@ public class Level4LampDoorTeleporter : MonoBehaviour
 
         player.transform.position = destination;
 
-        if (faceNegativeZAfterTeleport)
+        if (faceNegativeXAfterTeleport)
         {
-            ForcePlayerLookDirection(player, Vector3.back);
-        }
-        else if (faceTargetForward)
-        {
-            Vector3 eulerAngles = player.transform.eulerAngles;
-            eulerAngles.y = targetDoor.eulerAngles.y;
-            player.transform.eulerAngles = eulerAngles;
+            ForcePlayerLookDirection(player, Vector3.left);
         }
 
         if (hadController)

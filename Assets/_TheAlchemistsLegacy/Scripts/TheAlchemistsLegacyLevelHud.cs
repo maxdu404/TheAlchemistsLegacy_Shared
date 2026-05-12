@@ -46,6 +46,8 @@ public class TheAlchemistsLegacyLevelHud : MonoBehaviour
     private bool isIntroOpen;
     private bool isScrollOpen;
     private Font defaultFont;
+    private Text scrollTitleText;
+    private Text scrollBodyText;
     private bool isLevel1Scene;
     private bool isLevel2Scene;
     private bool isLevel3Scene;
@@ -392,16 +394,16 @@ public class TheAlchemistsLegacyLevelHud : MonoBehaviour
         RectTransform rect = scrollPanel.GetComponent<RectTransform>();
         Anchor(rect, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(900.0f, 560.0f), new Vector2(0.5f, 0.5f));
 
-        Text title = CreateText(scrollPanel.transform, "ScrollTitle", GetScrollTitle(), 36, new Color(0.14f, 0.08f, 0.03f), TextAnchor.UpperCenter);
-        Anchor(title.rectTransform, new Vector2(0.0f, 1.0f), new Vector2(1.0f, 1.0f), new Vector2(40.0f, -34.0f), new Vector2(-80.0f, 56.0f), new Vector2(0.5f, 1.0f));
+        scrollTitleText = CreateText(scrollPanel.transform, "ScrollTitle", GetScrollTitle(), 36, new Color(0.14f, 0.08f, 0.03f), TextAnchor.UpperCenter);
+        Anchor(scrollTitleText.rectTransform, new Vector2(0.0f, 1.0f), new Vector2(1.0f, 1.0f), new Vector2(40.0f, -34.0f), new Vector2(-80.0f, 56.0f), new Vector2(0.5f, 1.0f));
 
-        Text body = CreateText(scrollPanel.transform, "ScrollBody",
+        scrollBodyText = CreateText(scrollPanel.transform, "ScrollBody",
             GetScrollBody(),
             28,
             new Color(0.12f, 0.07f, 0.03f),
             TextAnchor.UpperLeft);
-        body.lineSpacing = 1.08f;
-        Anchor(body.rectTransform, new Vector2(0.0f, 1.0f), new Vector2(1.0f, 1.0f), new Vector2(70.0f, -116.0f), new Vector2(-140.0f, 310.0f), new Vector2(0.0f, 1.0f));
+        scrollBodyText.lineSpacing = 1.08f;
+        Anchor(scrollBodyText.rectTransform, new Vector2(0.0f, 1.0f), new Vector2(1.0f, 1.0f), new Vector2(70.0f, -116.0f), new Vector2(-140.0f, 310.0f), new Vector2(0.0f, 1.0f));
 
         Text close = CreateText(scrollPanel.transform, "ScrollClose", "Right Click / E  Close", 22, new Color(0.16f, 0.10f, 0.05f), TextAnchor.LowerCenter);
         Anchor(close.rectTransform, new Vector2(0.0f, 0.0f), new Vector2(1.0f, 0.0f), new Vector2(0.0f, 28.0f), new Vector2(-80.0f, 36.0f), new Vector2(0.5f, 0.0f));
@@ -415,7 +417,7 @@ public class TheAlchemistsLegacyLevelHud : MonoBehaviour
         RectTransform rect = introPanel.GetComponent<RectTransform>();
         Anchor(rect, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(900.0f, 560.0f), new Vector2(0.5f, 0.5f));
 
-        string introTitle = "A Letter from the Master";
+        string introTitle = isLevel4Scene ? "The Final Legacy" : "A Letter from the Master";
         string introBody = GetIntroBody();
 
         Text title = CreateText(introPanel.transform, "IntroTitle", introTitle, 36, new Color(0.14f, 0.08f, 0.03f), TextAnchor.UpperCenter);
@@ -433,7 +435,7 @@ public class TheAlchemistsLegacyLevelHud : MonoBehaviour
 
     private string GetScrollTitle()
     {
-        return isLevel3Scene ? "The Master's Lantern" : isLevel2Scene ? "Stone Tablet" : "Master's Note";
+        return isLevel4Scene ? "Lamp Trial Note" : isLevel3Scene ? "The Master's Lantern" : isLevel2Scene ? "Stone Tablet" : "Master's Note";
     }
 
     private string GetScrollBody()
@@ -450,7 +452,7 @@ public class TheAlchemistsLegacyLevelHud : MonoBehaviour
 
         if (isLevel4Scene)
         {
-            return "Three lamps wait on three tables.\n\nThe left lamp remembers the third floor.\nThe right lamp remembers the second floor.\nThe middle lamp has no path.\n\nCarry the right light to the right door.";
+            return "Three tables hold three flames.\n\nThe dark left table points to the highest room.\nThe pale right table points to the middle room.\nThe plain center table holds a dead lamp.\n\nChoose the lamp by the table beneath it, then carry that light to the matching door.";
         }
 
         return "Apprentice,\n\nTwo seals wake the old door.\nOne rests in the open. One waits inside the chest.\n\nLet the first seal answer the left hand of the room.\nLet the second complete the right.\n\nCross only when the fire fades.";
@@ -475,7 +477,7 @@ public class TheAlchemistsLegacyLevelHud : MonoBehaviour
 
         if (isLevel4Scene)
         {
-            return "Apprentice,\n\nThe final legacy is not taken. Four signs mark the old recipe: FIRE, SALT, STONE, and DROP.\n\nRecover each material, return it to the old cauldron, and carry the completed seal to the wall gate.";
+            return "Apprentice,\n\nThis is the final trial. The castle will not open for greed; it opens for one who restores what was left behind.\n\nBegin outside. Make ash from the old firewood, find the key to the salt chest, and return both offerings to their signs. When the main doors yield, read the lamp note inside.\n\nThe lamps lead to the remaining offerings: a yellow stone above the ice and a blue drop at the top of the castle. Bring all four materials back to the altar to restore the legacy.";
         }
 
         return "Apprentice,\n\nYou wake inside the old workshop. The master has left your first trial: learn the room, recover two stamps, and prove you can follow the marks of the craft.\n\nRead the note on the table first. It explains how to open the way out.";
@@ -527,19 +529,25 @@ public class TheAlchemistsLegacyLevelHud : MonoBehaviour
         {
             if (IsHoldingItem("forge_tool"))
             {
-                objectiveText.text = "Goal: use the forge tool on FireWooForAsh.";
+                objectiveText.text = "Goal: use the forge tool on the old firewood.";
                 return;
             }
 
             if (IsHoldingItem("Key_l4_salt"))
             {
-                objectiveText.text = "Goal: use the salt key to open Chest_l4_salt.";
+                objectiveText.text = "Goal: unlock the salt chest.";
+                return;
+            }
+
+            if (IsHoldingItem("torch_for_ice_l2"))
+            {
+                objectiveText.text = "Goal: melt the ice around the yellow stone.";
                 return;
             }
 
             if (IsHoldingItem("Ash_l4") || IsHoldingItem("Salt_l4") || IsHoldingItem("YellowStone_l4") || IsHoldingItem("BlueDrop_l4"))
             {
-                objectiveText.text = "Goal: return this material to the central cauldron.";
+                objectiveText.text = "Goal: place this offering on its matching sign.";
                 return;
             }
 
@@ -551,11 +559,11 @@ public class TheAlchemistsLegacyLevelHud : MonoBehaviour
 
             if (IsHoldingItem("lamp_2th") || IsHoldingItem("lamp_3th") || IsHoldingItem("lamp_no"))
             {
-                objectiveText.text = "Goal: carry this lamp to its matching door.";
+                objectiveText.text = "Goal: carry this lamp to the door described by the note.";
                 return;
             }
 
-            objectiveText.text = "Goal: gather FIRE, SALT, STONE, and DROP, then return each one to the cauldron.";
+            objectiveText.text = "Goal: restore the four offerings: fire ash, salt, yellow stone, and blue drop.";
             return;
         }
 
@@ -816,9 +824,20 @@ public class TheAlchemistsLegacyLevelHud : MonoBehaviour
             return "Right Click: Take the unusual light";
         }
 
-        if (target.GetComponentInParent<KeyChestController>() != null)
+        KeyChestController chest = target.GetComponentInParent<KeyChestController>();
+        if (chest != null)
         {
-            return IsHoldingItem("key_l3_chest")
+            if (chest.IsOpen)
+            {
+                return "The chest is open.";
+            }
+
+            if (!chest.RequiresKey)
+            {
+                return "Right Click: Open the chest";
+            }
+
+            return IsHoldingItem(chest.KeyItemName)
                 ? "Right Click: Unlock the chest"
                 : "This chest needs a key.";
         }
@@ -920,8 +939,8 @@ public class TheAlchemistsLegacyLevelHud : MonoBehaviour
             }
 
             return IsHoldingItem(ashFromFirewood.RequiredToolName)
-                ? "Right Click: Use the forge tool to make Ash"
-                : "Find forge_tool first.";
+                ? "Right Click: Burn the firewood into ash"
+                : "Find the forge tool first.";
         }
 
         KeyChestController saltChest = target.GetComponentInParent<KeyChestController>();
@@ -933,8 +952,24 @@ public class TheAlchemistsLegacyLevelHud : MonoBehaviour
             }
 
             return IsHoldingItem("Key_l4_salt")
-                ? "Right Click: Open Chest_l4_salt"
-                : "Find Key_l4_salt on this stall.";
+                ? "Right Click: Unlock the salt chest"
+                : "Find the small key near the market stall.";
+        }
+
+        Level3TorchGiver torchGiver = target.GetComponentInParent<Level3TorchGiver>();
+        if (torchGiver != null && lowerTargetName.Contains("candle"))
+        {
+            return itemPickup != null && itemPickup.isHoldingItem
+                ? "Free your hands before taking a torch."
+                : "Right Click: Take a lit torch";
+        }
+
+        Level3IceMelt iceMelt = target.GetComponentInParent<Level3IceMelt>();
+        if (iceMelt != null || IsLevel4IceTarget(lowerTargetName))
+        {
+            return IsHoldingItem("torch_for_ice_l2")
+                ? "Right Click: Melt the ice"
+                : "A lit torch could melt this ice.";
         }
 
         Level4LampDoorTeleporter lampDoor = target.GetComponentInParent<Level4LampDoorTeleporter>();
@@ -976,7 +1011,7 @@ public class TheAlchemistsLegacyLevelHud : MonoBehaviour
 
         if (lowerTargetName.Contains("final") && lowerTargetName.Contains("door"))
         {
-            return "The castle-wall gate waits for the Legacy Seal.";
+            return "The final gate waits for the restored seal.";
         }
 
         ItemSlotController slot = target.GetComponentInParent<ItemSlotController>();
@@ -1018,13 +1053,35 @@ public class TheAlchemistsLegacyLevelHud : MonoBehaviour
             return "Find the matching relic first.";
         }
 
-        if (hit.collider.CompareTag("Pickup"))
+        GameObject pickupObject = FindPickupTarget(target);
+        if (pickupObject != null)
         {
-            string level4PickupPrompt = GetLevel4PickupPrompt(target);
-            return !string.IsNullOrEmpty(level4PickupPrompt) ? level4PickupPrompt : GetPickupPrompt(hit.collider.gameObject);
+            string level4PickupPrompt = GetLevel4PickupPrompt(pickupObject.transform);
+            return !string.IsNullOrEmpty(level4PickupPrompt) ? level4PickupPrompt : GetPickupPrompt(pickupObject);
         }
 
         return "";
+    }
+
+    private bool IsLevel4IceTarget(string lowerHierarchyName)
+    {
+        return !string.IsNullOrEmpty(lowerHierarchyName)
+            && (lowerHierarchyName.Contains("ice_l2") || lowerHierarchyName.Contains("ice l2"));
+    }
+
+    private GameObject FindPickupTarget(Transform target)
+    {
+        while (target != null)
+        {
+            if (target.CompareTag("Pickup"))
+            {
+                return target.gameObject;
+            }
+
+            target = target.parent;
+        }
+
+        return null;
     }
 
     private string GetFriendlyLampName(string lampName)
@@ -1119,7 +1176,7 @@ public class TheAlchemistsLegacyLevelHud : MonoBehaviour
             return "Triangle Relic";
         }
 
-        return acceptedItemName.Replace("_l4", "").Replace("_", " ");
+        return "the matching item";
     }
 
     private string GetLowerHierarchyName(Transform target)
@@ -1228,6 +1285,11 @@ public class TheAlchemistsLegacyLevelHud : MonoBehaviour
         if (lowerName.Contains("torch_for_ice_l3"))
         {
             return "E: Take the fire torch";
+        }
+
+        if (lowerName.Contains("torch_for_ice_l2"))
+        {
+            return "E: Take the lit torch";
         }
 
         if (lowerName.Contains("torch_level2"))
@@ -1416,19 +1478,24 @@ public class TheAlchemistsLegacyLevelHud : MonoBehaviour
                 return "E: Take Blue Drop";
             }
 
-        if (lowerName.Contains("key_l4_salt"))
-        {
-            return "E: Take the salt key";
-        }
+            if (lowerName.Contains("key_l4_salt"))
+            {
+                return "E: Take the salt key";
+            }
 
-        if (lowerName.Contains("forge_tool"))
-        {
-            return "E: Take the forge tool";
-        }
+            if (lowerName.Contains("forge_tool"))
+            {
+                return "E: Take the forge tool";
+            }
 
-        if (lowerName.Contains("legacyseal_l4") || lowerName.Contains("legacy_seal"))
-        {
-            return "E: Take the Legacy Seal";
+            if (lowerName.Contains("torch_for_ice_l2"))
+            {
+                return "E: Take the lit torch";
+            }
+
+            if (lowerName.Contains("legacyseal_l4") || lowerName.Contains("legacy_seal"))
+            {
+                return "E: Take the Legacy Seal";
             }
 
             if (lowerName.Contains("lamp_2th"))
@@ -1489,6 +1556,11 @@ public class TheAlchemistsLegacyLevelHud : MonoBehaviour
         if (lowerName.Contains("torch_for_ice_l3"))
         {
             return "Ice Torch";
+        }
+
+        if (lowerName.Contains("torch_for_ice_l2"))
+        {
+            return "Lit Torch";
         }
 
         if (lowerName.Contains("lamp_l3"))
@@ -1780,6 +1852,21 @@ public class TheAlchemistsLegacyLevelHud : MonoBehaviour
         }
 
         return false;
+    }
+
+    public void ShowMessage(string title, string body)
+    {
+        if (scrollTitleText != null)
+        {
+            scrollTitleText.text = title;
+        }
+
+        if (scrollBodyText != null)
+        {
+            scrollBodyText.text = body;
+        }
+
+        SetScrollOpen(true);
     }
 
     private void SetScrollOpen(bool isOpen)

@@ -794,6 +794,7 @@ MonoBehaviour:
   placedPoint: {fileID: 0}
   destroyHeldItemOnPlace: 1
   interactionRange: 3
+  interactionAimRadius: 0.22
 --- !u!65 &62997353
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -2188,11 +2189,6 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 118020, guid: 94a4e3eafbc7e2942931221d56b6e8d6, type: 3}
   m_PrefabInstance: {fileID: 148459086}
   m_PrefabAsset: {fileID: 0}
---- !u!4 &148459088 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 436084, guid: 94a4e3eafbc7e2942931221d56b6e8d6, type: 3}
-  m_PrefabInstance: {fileID: 148459086}
-  m_PrefabAsset: {fileID: 0}
 --- !u!114 &148459094
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2234,16 +2230,21 @@ MonoBehaviour:
   m_GameObject: {fileID: 148459087}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 44ab65f0880632e4f9eaaa1e5cac8e53, type: 3}
+  m_Script: {fileID: 11500000, guid: 38c6cb433a4054816ad5a81b29de3eca, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  lid: {fileID: 148459088}
+  requiresKey: 0
+  keyItemName: 
+  autoConfigureLevel4SaltChest: 0
+  consumeKeyOnOpen: 0
+  lid: {fileID: 0}
   openAngle: -90
   openSpeed: 2
-  interactionRange: 3
-  contents:
+  contentsToReveal:
   - {fileID: 516745473}
   hideContentsUntilOpen: 1
+  interactionRange: 3
+  interactionAimRadius: 0.22
 --- !u!1001 &176361514
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -5592,6 +5593,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   hideExistingCanvases: 1
   raycastRange: 3
+  aimAssistRadius: 0.65
   scrollName: Scroll_MasterIntro
   chestName: Chest_RuneContainer
   doorName: Door_level0_exit
@@ -6244,18 +6246,6 @@ BoxCollider:
   serializedVersion: 2
   m_Size: {x: 0.13, y: 0.15, z: 0.23262405}
   m_Center: {x: 0.0000038146973, y: -9.313226e-10, z: -0.0000076256692}
---- !u!114 &516745481
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 516745473}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 0}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!114 &516745492
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -18237,10 +18227,19 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   moveSpeed: 5
+  sprintMultiplier: 1.35
   playerCamera: {fileID: 141215071}
   mouseSensitivity: 0.5
   maxLookUpAngle: 60
   maxLookDownAngle: -60
+  cameraFieldOfView: 55
+  snapToGroundOnStart: 1
+  preserveLevel0AndLevel1SpawnHeight: 1
+  groundSnapProbeHeight: 4
+  groundSnapProbeDistance: 12
+  groundClearance: 0.14
+  startSnapMaxDownDistance: 1.5
+  startSnapMaxUpDistance: 0.5
   enableJump: 0
   jumpForce: 5
   gravity: -9.81
@@ -18294,6 +18293,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   pickupKey: 101
   pickupRange: 3
+  pickupAimRadius: 0.65
   handPosition: {fileID: 1699109613}
   pickupLayer:
     serializedVersion: 2
@@ -18809,6 +18809,7 @@ MonoBehaviour:
   placedPoint: {fileID: 0}
   destroyHeldItemOnPlace: 1
   interactionRange: 3
+  interactionAimRadius: 0.22
 --- !u!65 &1703062550
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -20435,6 +20436,30 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 24dd27467b8b1be40b61feeb1e2bbd85, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &1870535294
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1870535280}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 38c6cb433a4054816ad5a81b29de3eca, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  requiresKey: 0
+  keyItemName: Key_l3_chest
+  autoConfigureLevel4SaltChest: 1
+  consumeKeyOnOpen: 1
+  lid: {fileID: 0}
+  openAngle: -90
+  openSpeed: 2
+  contentsToReveal:
+  - {fileID: 516745473}
+  hideContentsUntilOpen: 1
+  interactionRange: 3
+  interactionAimRadius: 0.22
 --- !u!1001 &1871141503
 PrefabInstance:
   m_ObjectHideFlags: 0

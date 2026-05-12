@@ -2384,7 +2384,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 100000, guid: 6929339097af8ce4bbd6c6d39728a5cc, type: 3}
       propertyPath: m_Name
-      value: fi_vil_light_candle_wall02_lit_b
+      value: candle
       objectReference: {fileID: 0}
     - target: {fileID: 400000, guid: 6929339097af8ce4bbd6c6d39728a5cc, type: 3}
       propertyPath: m_RootOrder
@@ -17374,7 +17374,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   moveSpeed: 5
-  sprintMultiplier: 2
+  sprintMultiplier: 1.35
   playerCamera: {fileID: 141215071}
   mouseSensitivity: 0.5
   maxLookUpAngle: 60

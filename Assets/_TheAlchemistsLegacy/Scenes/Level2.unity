@@ -1620,23 +1620,23 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 400000, guid: 80b08148bd1b80d47aeb3043fe86d434, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 72.205
+      value: 73.304
       objectReference: {fileID: 0}
     - target: {fileID: 400000, guid: 80b08148bd1b80d47aeb3043fe86d434, type: 3}
       propertyPath: m_LocalRotation.w
-      value: 0.5
+      value: 0.7071068
       objectReference: {fileID: 0}
     - target: {fileID: 400000, guid: 80b08148bd1b80d47aeb3043fe86d434, type: 3}
       propertyPath: m_LocalRotation.x
-      value: 0.5
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 400000, guid: 80b08148bd1b80d47aeb3043fe86d434, type: 3}
       propertyPath: m_LocalRotation.y
-      value: 0.5
+      value: 0.7071068
       objectReference: {fileID: 0}
     - target: {fileID: 400000, guid: 80b08148bd1b80d47aeb3043fe86d434, type: 3}
       propertyPath: m_LocalRotation.z
-      value: 0.5
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 400000, guid: 80b08148bd1b80d47aeb3043fe86d434, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
@@ -1648,7 +1648,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 400000, guid: 80b08148bd1b80d47aeb3043fe86d434, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
-      value: 90
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2300000, guid: 80b08148bd1b80d47aeb3043fe86d434, type: 3}
       propertyPath: m_Materials.Array.data[0]
@@ -1863,13 +1863,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 44ab65f0880632e4f9eaaa1e5cac8e53, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  lid: {fileID: 1370597449}
-  openAngle: -90
-  openSpeed: 2
-  interactionRange: 3
-  contents:
-  - {fileID: 0}
-  hideContentsUntilOpen: 1
 --- !u!114 &202864976
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4380,6 +4373,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   hideExistingCanvases: 1
   raycastRange: 3
+  aimAssistRadius: 0.65
   scrollName: Scroll_MasterIntro
   chestName: Chest_RuneContainer
   doorName: Door_level0_exit
@@ -12439,11 +12433,6 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 194870, guid: 94a4e3eafbc7e2942931221d56b6e8d6, type: 3}
   m_PrefabInstance: {fileID: 1311056181}
   m_PrefabAsset: {fileID: 0}
---- !u!4 &1370597449 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 436084, guid: 94a4e3eafbc7e2942931221d56b6e8d6, type: 3}
-  m_PrefabInstance: {fileID: 1311056181}
-  m_PrefabAsset: {fileID: 0}
 --- !u!114 &1370597450
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -15178,6 +15167,7 @@ MonoBehaviour:
   giveOnlyOnce: 1
   lightTorchWhenGiven: 1
   interactionRange: 3
+  interactionAimRadius: 0.22
   unlockBirthDoorWhenTorchGiven: 1
   birthDoorObject: {fileID: 0}
   birthDoorObjectName: Door_birth
@@ -15444,16 +15434,19 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   moveSpeed: 5
-  sprintMultiplier: 1.25
+  sprintMultiplier: 1.35
   playerCamera: {fileID: 141215071}
   mouseSensitivity: 0.5
   maxLookUpAngle: 60
   maxLookDownAngle: -60
   cameraFieldOfView: 55
   snapToGroundOnStart: 1
+  preserveLevel0AndLevel1SpawnHeight: 1
   groundSnapProbeHeight: 4
   groundSnapProbeDistance: 12
   groundClearance: 0.04
+  startSnapMaxDownDistance: 1.5
+  startSnapMaxUpDistance: 0.5
   enableJump: 0
   jumpForce: 5
   gravity: -9.81
@@ -15507,6 +15500,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   pickupKey: 101
   pickupRange: 3
+  pickupAimRadius: 0.65
   handPosition: {fileID: 1699109613}
   pickupLayer:
     serializedVersion: 2

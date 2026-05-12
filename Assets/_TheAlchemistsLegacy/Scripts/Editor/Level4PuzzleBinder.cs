@@ -23,8 +23,10 @@ public static class Level4PuzzleBinder
         changed += BindAshPuzzle();
         changed += BindSaltChest();
         changed += BindLampDoors();
+        changed += BindExitDoor();
         changed += BindItemSlots();
         changed += BindCastleEntryGate();
+        changed += BindSecondFloorIcePuzzle();
         changed += PrepareLevel4Pickups();
         changed += RemoveKnownMissingScripts();
 
@@ -80,6 +82,7 @@ public static class Level4PuzzleBinder
         GameObject salt = FindSceneObjectByName("Salt_l4");
 
         SerializedObject serialized = new SerializedObject(keyChest);
+        SetBool(serialized, "requiresKey", true);
         SetString(serialized, "keyItemName", "Key_l4_salt");
         SetBool(serialized, "autoConfigureLevel4SaltChest", true);
         SetBool(serialized, "consumeKeyOnOpen", true);
@@ -136,6 +139,33 @@ public static class Level4PuzzleBinder
         return 1;
     }
 
+    private static int BindExitDoor()
+    {
+        GameObject door = FindSceneObjectByName("Door_l4_exit");
+        if (door == null)
+        {
+            WarnMissing("Door_l4_exit");
+            return 0;
+        }
+
+        Level4ExitDoorController exitDoor = EnsureComponent<Level4ExitDoorController>(door);
+        Level4CompletionController completionController = Object.FindObjectOfType<Level4CompletionController>();
+
+        SerializedObject serialized = new SerializedObject(exitDoor);
+        SetBool(serialized, "requireLevelCompletion", true);
+        SetObject(serialized, "completionController", completionController);
+        SetString(serialized, "sceneToLoad", "TrailComplete");
+        SetBool(serialized, "loadOnPlayerTrigger", true);
+        SetBool(serialized, "loadWhenPlayerIsNear", true);
+        SetFloat(serialized, "exitDistance", DefaultInteractionRange);
+        SetString(serialized, "playerTag", "Player");
+        serialized.ApplyModifiedPropertiesWithoutUndo();
+
+        EditorUtility.SetDirty(door);
+        EditorUtility.SetDirty(exitDoor);
+        return 1;
+    }
+
     private static int BindItemSlots()
     {
         int changed = 0;
@@ -185,6 +215,89 @@ public static class Level4PuzzleBinder
         return 1;
     }
 
+    private static int BindSecondFloorIcePuzzle()
+    {
+        int changed = 0;
+        changed += BindSecondFloorCandle();
+        changed += BindSecondFloorIce();
+        return changed;
+    }
+
+    private static int BindSecondFloorCandle()
+    {
+        GameObject candle = FindSceneObjectByName("candle_l2");
+        if (candle == null)
+        {
+            WarnMissing("candle_l2");
+            return 0;
+        }
+
+        GameObject torch = FindSceneObjectByName("torch_for_ice_l2");
+        if (torch == candle)
+        {
+            torch = null;
+        }
+        Level3TorchGiver torchGiver = EnsureComponent<Level3TorchGiver>(candle);
+        SerializedObject serialized = new SerializedObject(torchGiver);
+        SetObject(serialized, "torchForIcePrefabOrObject", torch);
+        SetString(serialized, "heldTorchName", "torch_for_ice_l2");
+        SetBool(serialized, "instantiateTorch", true);
+        SetBool(serialized, "giveOnlyOnce", false);
+        SetBool(serialized, "lightTorchWhenGiven", true);
+        SetFloat(serialized, "interactionRange", DefaultInteractionRange);
+        SetFloat(serialized, "interactionAimRadius", DefaultAimRadius);
+        SetBool(serialized, "unlockBirthDoorWhenTorchGiven", false);
+        serialized.ApplyModifiedPropertiesWithoutUndo();
+
+        SetActiveIfPresent(torch, false);
+        EnsureUsableCollider(candle);
+        EditorUtility.SetDirty(candle);
+        EditorUtility.SetDirty(torchGiver);
+
+        if (torch == null)
+        {
+            WarnMissing("torch_for_ice_l2");
+        }
+
+        return 1;
+    }
+
+    private static int BindSecondFloorIce()
+    {
+        GameObject ice = FindSceneObjectByName("Ice_l2");
+        if (ice == null)
+        {
+            WarnMissing("Ice_l2");
+            return 0;
+        }
+
+        GameObject yellowStone = FindSceneObjectByName("YellowStone_l4");
+        Level3IceMelt iceMelt = EnsureComponent<Level3IceMelt>(ice);
+        SerializedObject serialized = new SerializedObject(iceMelt);
+        SetString(serialized, "requiredTorchName", "torch_for_ice_l2");
+        SetObject(serialized, "lanternBaseObject", yellowStone);
+        SetString(serialized, "lanternBaseObjectName", "YellowStone_l4");
+        SetBool(serialized, "hideLanternBaseUntilMelted", true);
+        SetObjectArray(serialized, "extraObjectsToHide");
+        SetObjectArray(serialized, "extraObjectsToReveal");
+        SetFloat(serialized, "interactionRange", DefaultInteractionRange);
+        SetFloat(serialized, "interactionAimRadius", DefaultAimRadius);
+        serialized.ApplyModifiedPropertiesWithoutUndo();
+
+        SetActiveIfPresent(yellowStone, false);
+        EnsureUsableCollider(ice);
+        EditorUtility.SetDirty(ice);
+        EditorUtility.SetDirty(iceMelt);
+
+        if (yellowStone == null)
+        {
+            WarnMissing("YellowStone_l4");
+        }
+
+        return 1;
+    }
+
+
     private static int BindSlot(string[] slotNames, string acceptedItemName, string placedVisualName)
     {
         GameObject slot = FindFirstSceneObject(slotNames);
@@ -225,6 +338,7 @@ public static class Level4PuzzleBinder
             "Ash_l4",
             "YellowStone_l4",
             "BlueDrop_l4",
+            "torch_for_ice_l2",
             "lamp_2th",
             "lamp_3th",
             "lamp_no"
@@ -282,6 +396,8 @@ public static class Level4PuzzleBinder
         body.useGravity = true;
         body.isKinematic = !target.activeInHierarchy;
         body.collisionDetectionMode = CollisionDetectionMode.Discrete;
+        body.constraints = RigidbodyConstraints.FreezeRotation;
+        body.angularDrag = 8.0f;
     }
 
     private static void EnsureUsableCollider(GameObject target)

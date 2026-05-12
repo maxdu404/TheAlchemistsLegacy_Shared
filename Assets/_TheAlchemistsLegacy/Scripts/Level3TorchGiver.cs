@@ -12,6 +12,7 @@ public class Level3TorchGiver : MonoBehaviour
 
     [Header("Interaction")]
     [SerializeField] private float interactionRange = 3.0f;
+    [SerializeField] private float interactionAimRadius = 0.22f;
 
     [Header("Birth Door Unlock")]
     [SerializeField] private bool unlockBirthDoorWhenTorchGiven = true;
@@ -25,6 +26,7 @@ public class Level3TorchGiver : MonoBehaviour
 
     private void Start()
     {
+        ConfigureFromName();
         playerCamera = Camera.main;
         playerPickup = ItemPickup.instance != null ? ItemPickup.instance : FindObjectOfType<ItemPickup>();
 
@@ -32,10 +34,39 @@ public class Level3TorchGiver : MonoBehaviour
         {
             torchForIcePrefabOrObject = FindSceneObjectByName(heldTorchName);
         }
+        else if (ShouldReplaceAssignedTorchObject())
+        {
+            GameObject intendedTorch = FindSceneObjectByName(heldTorchName);
+            if (intendedTorch != null)
+            {
+                torchForIcePrefabOrObject = intendedTorch;
+            }
+        }
 
         if (birthDoorObject == null)
         {
             birthDoorObject = FindBirthDoorObject();
+        }
+    }
+
+    private void Reset()
+    {
+        ConfigureFromName();
+    }
+
+    private void OnValidate()
+    {
+        ConfigureFromName();
+    }
+
+    private void ConfigureFromName()
+    {
+        string lowerName = gameObject.name.ToLowerInvariant();
+        if (lowerName.Contains("candle_l2"))
+        {
+            heldTorchName = "torch_for_ice_l2";
+            instantiateTorch = true;
+            unlockBirthDoorWhenTorchGiven = false;
         }
     }
 
@@ -62,8 +93,7 @@ public class Level3TorchGiver : MonoBehaviour
             return;
         }
 
-        Ray ray = playerCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0.0f));
-        if (!Physics.Raycast(ray, out RaycastHit hit, interactionRange))
+        if (!AimInteraction.Cast(playerCamera, interactionRange, interactionAimRadius, out RaycastHit hit))
         {
             return;
         }
@@ -107,6 +137,14 @@ public class Level3TorchGiver : MonoBehaviour
         {
             torchForIcePrefabOrObject = FindSceneObjectByName(heldTorchName);
         }
+        else if (ShouldReplaceAssignedTorchObject())
+        {
+            GameObject intendedTorch = FindSceneObjectByName(heldTorchName);
+            if (intendedTorch != null)
+            {
+                torchForIcePrefabOrObject = intendedTorch;
+            }
+        }
 
         if (birthDoorObject == null)
         {
@@ -119,8 +157,34 @@ public class Level3TorchGiver : MonoBehaviour
         return hitTransform == transform || hitTransform.IsChildOf(transform);
     }
 
+    private bool ShouldReplaceAssignedTorchObject()
+    {
+        if (torchForIcePrefabOrObject == null)
+        {
+            return false;
+        }
+
+        if (torchForIcePrefabOrObject == gameObject)
+        {
+            return true;
+        }
+
+        if (string.IsNullOrWhiteSpace(heldTorchName))
+        {
+            return false;
+        }
+
+        return torchForIcePrefabOrObject.name.IndexOf(heldTorchName, System.StringComparison.OrdinalIgnoreCase) < 0
+            && gameObject.name.IndexOf("candle_l2", System.StringComparison.OrdinalIgnoreCase) >= 0;
+    }
+
     private GameObject CreateTorchObject()
     {
+        if (ShouldReplaceAssignedTorchObject())
+        {
+            torchForIcePrefabOrObject = FindSceneObjectByName(heldTorchName);
+        }
+
         if (torchForIcePrefabOrObject == null)
         {
             return null;
@@ -143,6 +207,8 @@ public class Level3TorchGiver : MonoBehaviour
             body.velocity = Vector3.zero;
             body.angularVelocity = Vector3.zero;
             body.isKinematic = true;
+            body.constraints = RigidbodyConstraints.FreezeRotation;
+            body.angularDrag = 8.0f;
         }
 
         Collider[] colliders = torch.GetComponentsInChildren<Collider>(true);

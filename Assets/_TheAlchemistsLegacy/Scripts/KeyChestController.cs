@@ -5,6 +5,7 @@ using UnityEngine.SceneManagement;
 public class KeyChestController : MonoBehaviour
 {
     [Header("Required Key")]
+    [SerializeField] private bool requiresKey = false;
     [SerializeField] private string keyItemName = "Key_l3_chest";
     [SerializeField] private bool autoConfigureLevel4SaltChest = true;
     [SerializeField] private bool consumeKeyOnOpen = true;
@@ -25,6 +26,16 @@ public class KeyChestController : MonoBehaviour
     public bool IsOpen
     {
         get { return isOpen; }
+    }
+
+    public bool RequiresKey
+    {
+        get { return requiresKey; }
+    }
+
+    public string KeyItemName
+    {
+        get { return keyItemName; }
     }
 
     private bool isOpen;
@@ -71,14 +82,17 @@ public class KeyChestController : MonoBehaviour
 
     private void ConfigureFromName()
     {
-        if (!autoConfigureLevel4SaltChest)
+        if (gameObject.name.IndexOf("Chest_l4_salt", StringComparison.OrdinalIgnoreCase) >= 0)
         {
+            requiresKey = true;
+            keyItemName = "Key_l4_salt";
             return;
         }
 
-        if (gameObject.name.IndexOf("Chest_l4_salt", StringComparison.OrdinalIgnoreCase) >= 0)
+        if (gameObject.name.IndexOf("Chest_l3", StringComparison.OrdinalIgnoreCase) >= 0)
         {
-            keyItemName = "Key_l4_salt";
+            requiresKey = true;
+            keyItemName = "Key_l3_chest";
         }
     }
 
@@ -150,7 +164,7 @@ public class KeyChestController : MonoBehaviour
             playerPickup = ItemPickup.instance != null ? ItemPickup.instance : FindObjectOfType<ItemPickup>();
         }
 
-        if (playerCamera == null || playerPickup == null)
+        if (playerCamera == null)
         {
             return;
         }
@@ -165,7 +179,7 @@ public class KeyChestController : MonoBehaviour
             return;
         }
 
-        if (!IsHoldingKey())
+        if (requiresKey && !IsHoldingKey())
         {
             Debug.Log(gameObject.name + " needs " + keyItemName);
             return;
@@ -176,7 +190,17 @@ public class KeyChestController : MonoBehaviour
 
     private bool IsHoldingKey()
     {
-        if (!playerPickup.isHoldingItem || playerPickup.currentItem == null)
+        if (!requiresKey)
+        {
+            return true;
+        }
+
+        if (playerPickup == null)
+        {
+            playerPickup = ItemPickup.instance != null ? ItemPickup.instance : FindObjectOfType<ItemPickup>();
+        }
+
+        if (playerPickup == null || !playerPickup.isHoldingItem || playerPickup.currentItem == null)
         {
             return false;
         }
@@ -209,7 +233,7 @@ public class KeyChestController : MonoBehaviour
 
         isOpen = true;
 
-        if (consumeKeyOnOpen)
+        if (requiresKey && consumeKeyOnOpen && playerPickup != null && playerPickup.currentItem != null)
         {
             Destroy(playerPickup.currentItem);
             playerPickup.currentItem = null;
@@ -217,8 +241,22 @@ public class KeyChestController : MonoBehaviour
             playerPickup.isHoldingItem = false;
         }
 
+        SetLidCollidersEnabled(false);
         SetContentsAvailable(true);
         Debug.Log(gameObject.name + " opened.");
+    }
+
+    private void SetLidCollidersEnabled(bool enabled)
+    {
+        if (lid == null)
+        {
+            return;
+        }
+
+        foreach (Collider col in lid.GetComponentsInChildren<Collider>(true))
+        {
+            col.enabled = enabled;
+        }
     }
 
     private void SetContentsAvailable(bool isAvailable)

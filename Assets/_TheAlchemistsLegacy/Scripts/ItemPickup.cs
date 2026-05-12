@@ -88,6 +88,11 @@ public class ItemPickup : MonoBehaviour
         }
 
         GameObject pickupObject = FindPickupRoot(hit.collider);
+        if (pickupObject == null && HitOpenChest(hit.collider))
+        {
+            pickupObject = FindPickupBehindOpenChest(hit);
+        }
+
         if (pickupObject == null)
         {
             Debug.Log("Object cannot be picked up: " + hit.collider.name);
@@ -95,6 +100,51 @@ public class ItemPickup : MonoBehaviour
         }
 
         PickupItem(pickupObject);
+    }
+
+    private bool HitOpenChest(Collider hitCollider)
+    {
+        if (hitCollider == null)
+        {
+            return false;
+        }
+
+        KeyChestController chest = hitCollider.GetComponentInParent<KeyChestController>();
+        return chest != null && chest.IsOpen;
+    }
+
+    private GameObject FindPickupBehindOpenChest(RaycastHit chestHit)
+    {
+        Ray ray = playerCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0.0f));
+        RaycastHit[] hits = Physics.SphereCastAll(
+            ray,
+            Mathf.Max(0.0f, pickupAimRadius),
+            pickupRange,
+            pickupLayer,
+            QueryTriggerInteraction.Collide);
+
+        System.Array.Sort(hits, (left, right) => left.distance.CompareTo(right.distance));
+
+        foreach (RaycastHit candidateHit in hits)
+        {
+            if (candidateHit.collider == null)
+            {
+                continue;
+            }
+
+            if (candidateHit.collider == chestHit.collider)
+            {
+                continue;
+            }
+
+            GameObject pickupObject = FindPickupRoot(candidateHit.collider);
+            if (pickupObject != null)
+            {
+                return pickupObject;
+            }
+        }
+
+        return null;
     }
 
     private GameObject FindPickupRoot(Collider hitCollider)
