@@ -533,41 +533,41 @@ public class TheAlchemistsLegacyLevelHud : MonoBehaviour
         {
             if (IsHoldingItem("forge_tool"))
             {
-                objectiveText.text = "Goal: use the forge tool on the old firewood.";
+                objectiveText.text = "Goal: burn old firewood.";
                 return;
             }
 
             if (IsHoldingItem("Key_l4_salt"))
             {
-                objectiveText.text = "Goal: unlock the salt chest.";
+                objectiveText.text = "Goal: open salt chest.";
                 return;
             }
 
             if (IsHoldingItem("torch_for_ice_l2"))
             {
-                objectiveText.text = "Goal: melt the ice around the yellow stone.";
+                objectiveText.text = "Goal: melt yellow ice.";
                 return;
             }
 
             if (IsHoldingItem("Ash_l4") || IsHoldingItem("Salt_l4") || IsHoldingItem("YellowStone_l4") || IsHoldingItem("BlueDrop_l4"))
             {
-                objectiveText.text = "Goal: place this offering on its matching sign.";
+                objectiveText.text = "Goal: place this offering.";
                 return;
             }
 
             if (IsHoldingItem("LegacySeal_l4"))
             {
-                objectiveText.text = "Goal: place the Legacy Seal in the castle-wall gate.";
+                objectiveText.text = "Goal: go to the final exit.";
                 return;
             }
 
-            if (IsHoldingItem("lamp_2th") || IsHoldingItem("lamp_3th") || IsHoldingItem("lamp_no"))
+            if (IsHoldingItem("lamp_2th") || IsHoldingItem("lamp_l4_2th") || IsHoldingItem("lamp_3th") || IsHoldingItem("lamp_no") || IsHoldingItem("lamp_none"))
             {
-                objectiveText.text = "Goal: carry this lamp to the door described by the note.";
+                objectiveText.text = "Goal: use the matching door.";
                 return;
             }
 
-            objectiveText.text = "Goal: restore the four offerings: fire ash, salt, yellow stone, and blue drop.";
+            objectiveText.text = "Goal: restore Ash, Salt, Stone, Drop.";
             return;
         }
 
@@ -968,6 +968,11 @@ public class TheAlchemistsLegacyLevelHud : MonoBehaviour
             return "Right Click: Read the clue";
         }
 
+        if (IsLevel4CastleEntryDoor(lowerTargetName))
+        {
+            return "Restore Ash and Salt to open.";
+        }
+
         Level4AshFromFirewood ashFromFirewood = target.GetComponentInParent<Level4AshFromFirewood>();
         if (ashFromFirewood != null)
         {
@@ -1105,6 +1110,18 @@ public class TheAlchemistsLegacyLevelHud : MonoBehaviour
     {
         return !string.IsNullOrEmpty(lowerHierarchyName)
             && (lowerHierarchyName.Contains("ice_l2") || lowerHierarchyName.Contains("ice l2"));
+    }
+
+    private bool IsLevel4CastleEntryDoor(string lowerHierarchyName)
+    {
+        if (string.IsNullOrEmpty(lowerHierarchyName))
+        {
+            return false;
+        }
+
+        string normalizedName = lowerHierarchyName.Replace("_", "").Replace(" ", "");
+        return normalizedName.Contains("doormiddle1th")
+            || normalizedName.Contains("doormiddle1th2");
     }
 
     private GameObject FindPickupTarget(Transform target)
